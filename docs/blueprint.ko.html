@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glassdoor 패널 설계도</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;600&display=swap">
+<style>
+:root{
+  --paper:#f1f3f1; --surface:#ffffff; --surface-2:#e8ede9; --sunk:#eaeeeb;
+  --ink:#171b19; --ink-2:#3c4642; --muted:#66736e; --rule:#d4dbd6; --rule-2:#e2e7e3;
+  --accent:#0f6a4e; --accent-soft:#dcebe4;
+  --ochre:#93590d; --ochre-soft:#f3e7d2;
+  --crimson:#8c2f2a; --crimson-soft:#f4dedb;
+  --band-1:#0f6a4e; --band-2:#2c7f63; --band-3:#4a9479; --band-4:#69a98f;
+  --band-5:#88bea6; --band-6:#a6d2bd; --band-7:#c3e2d4; --band-8:#dcefe6;
+  --shadow:0 1px 2px rgba(23,27,25,.05), 0 8px 24px -16px rgba(23,27,25,.28);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0d100f; --surface:#151a18; --surface-2:#1c2321; --sunk:#111615;
+    --ink:#e3e9e5; --ink-2:#c0cac5; --muted:#8b9a94; --rule:#2a3230; --rule-2:#222927;
+    --accent:#52c096; --accent-soft:#15302a;
+    --ochre:#d4924a; --ochre-soft:#31261a;
+    --crimson:#dd7a72; --crimson-soft:#331f1e;
+    --band-1:#63cda4; --band-2:#57b992; --band-3:#4ca581; --band-4:#419170;
+    --band-5:#367d5f; --band-6:#2b694e; --band-7:#20553d; --band-8:#17412d;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0d100f; --surface:#151a18; --surface-2:#1c2321; --sunk:#111615;
+  --ink:#e3e9e5; --ink-2:#c0cac5; --muted:#8b9a94; --rule:#2a3230; --rule-2:#222927;
+  --accent:#52c096; --accent-soft:#15302a;
+  --ochre:#d4924a; --ochre-soft:#31261a;
+  --crimson:#dd7a72; --crimson-soft:#331f1e;
+  --band-1:#63cda4; --band-2:#57b992; --band-3:#4ca581; --band-4:#419170;
+  --band-5:#367d5f; --band-6:#2b694e; --band-7:#20553d; --band-8:#17412d;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:"Noto Serif KR",Batang,"Apple SD Gothic Neo",serif;
+  font-size:16.5px; line-height:1.82; margin:0; word-break:keep-all;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4,.ui{font-family:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif}
+code,kbd,.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;word-break:break-all}
+
+.shell{max-width:1220px;margin:0 auto;padding:0 28px 96px;display:grid;gap:0 52px;grid-template-columns:1fr}
+@media(min-width:1080px){.shell{grid-template-columns:200px minmax(0,880px);justify-content:center}}
+
+/* ---- 머리글 ---- */
+.mast{grid-column:1/-1;padding:64px 0 34px;border-bottom:1px solid var(--rule)}
+.eyebrow{font-family:"Noto Sans KR",sans-serif;font-size:12px;font-weight:600;letter-spacing:.12em;
+  color:var(--accent);margin:0 0 18px}
+h1{font-size:clamp(36px,5.6vw,56px);line-height:1.14;font-weight:700;letter-spacing:-.02em;
+  margin:0 0 20px;text-wrap:balance;max-width:16ch}
+.standfirst{font-size:19px;line-height:1.78;color:var(--ink-2);max-width:44ch;margin:0 0 30px}
+.byline{font-family:"Noto Sans KR",sans-serif;font-size:13px;color:var(--muted);
+  display:flex;flex-wrap:wrap;gap:8px 20px;margin:0;line-height:1.6}
+.byline b{font-weight:600;color:var(--ink-2)}
+.langlink{font-family:"Noto Sans KR",sans-serif;font-size:12.5px;margin:18px 0 0}
+.langlink a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent-soft)}
+
+.figures{grid-column:1/-1;display:grid;gap:1px;background:var(--rule);
+  grid-template-columns:repeat(auto-fit,minmax(158px,1fr));
+  border-bottom:1px solid var(--rule)}
+.fig{background:var(--paper);padding:22px 4px 24px}
+.fig .n{font-family:"Noto Sans KR",sans-serif;font-size:29px;font-weight:600;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;line-height:1.15;display:block;margin-bottom:7px}
+.fig .l{font-family:"Noto Sans KR",sans-serif;font-size:12px;color:var(--muted);line-height:1.5}
+
+/* ---- 목차 ---- */
+nav.toc{display:none}
+@media(min-width:1080px){
+  nav.toc{display:block;position:sticky;top:0;align-self:start;padding-top:44px;max-height:100vh;overflow-y:auto}
+  nav.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+  nav.toc a{font-family:"Noto Sans KR",sans-serif;font-size:12.5px;line-height:1.45;color:var(--muted);
+    text-decoration:none;display:flex;gap:9px;padding:5px 0}
+  nav.toc a:hover{color:var(--accent)}
+  nav.toc a span{font-variant-numeric:tabular-nums;color:var(--muted);opacity:.6;flex:none}
+  nav.toc a:hover span{color:var(--accent)}
+}
+
+main{padding-top:44px;min-width:0}
+section{padding:38px 0 4px;border-top:1px solid var(--rule-2)}
+section:first-of-type{border-top:0;padding-top:8px}
+h2{font-size:26px;font-weight:600;letter-spacing:-.015em;line-height:1.4;margin:0 0 6px;text-wrap:balance}
+h2 .num{color:var(--accent);font-variant-numeric:tabular-nums;margin-right:11px;font-weight:500}
+.dek{color:var(--muted);font-size:15.5px;margin:0 0 26px;max-width:46ch;line-height:1.75;
+  font-family:"Noto Sans KR",sans-serif}
+h3{font-size:15px;font-weight:600;margin:32px 0 12px;color:var(--ink)}
+p{max-width:46ch;margin:0 0 17px}
+a{color:var(--accent)}
+strong{font-weight:600}
+code{font-size:.85em;background:var(--surface-2);padding:.12em .34em;border-radius:3px;color:var(--ink-2)}
+
+ul.plain{max-width:46ch;padding-left:20px;margin:0 0 18px}
+ul.plain li{margin-bottom:11px}
+
+/* ---- 강조 상자 ---- */
+.callout{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--accent);
+  padding:24px 26px;margin:0 0 26px;box-shadow:var(--shadow)}
+.callout.warn{border-left-color:var(--ochre)}
+.callout p:last-child{margin-bottom:0}
+.callout .tag{font-family:"Noto Sans KR",sans-serif;font-size:11.5px;font-weight:600;letter-spacing:.1em;
+  color:var(--accent);display:block;margin-bottom:10px}
+.callout.warn .tag{color:var(--ochre)}
+
+/* ---- 코드 ---- */
+pre{background:var(--sunk);border:1px solid var(--rule);padding:18px 20px;overflow-x:auto;
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;line-height:1.62;color:var(--ink-2);
+  margin:0 0 22px;word-break:normal}
+pre b{color:var(--accent);font-weight:500}
+pre i{color:var(--muted);font-style:normal}
+pre em{color:var(--ochre);font-style:normal}
+
+/* ---- 표 ---- */
+.tw{overflow-x:auto;margin:0 0 24px;border:1px solid var(--rule);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;font-family:"Noto Sans KR",sans-serif}
+th{text-align:left;font-weight:600;font-size:12px;color:var(--muted);padding:11px 16px;
+  border-bottom:1px solid var(--rule);white-space:nowrap;background:var(--surface-2)}
+td{padding:12px 16px;border-bottom:1px solid var(--rule-2);vertical-align:top;line-height:1.65}
+tr:last-child td{border-bottom:0}
+td.mono{font-family:"IBM Plex Mono",monospace;font-size:12.5px;white-space:nowrap}
+td code,th code{font-size:12.5px}
+
+/* ---- 차트 ---- */
+figure{margin:0 0 26px;background:var(--surface);border:1px solid var(--rule);padding:22px 22px 16px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{font-family:"Noto Sans KR",sans-serif;font-size:12.5px;color:var(--muted);margin-top:14px;
+  padding-top:12px;border-top:1px solid var(--rule-2);line-height:1.75}
+.key{display:flex;flex-wrap:wrap;gap:6px 22px;font-family:"Noto Sans KR",sans-serif;font-size:12.5px;
+  color:var(--ink-2);margin-bottom:16px}
+.key i{width:22px;height:3px;display:inline-block;vertical-align:middle;margin-right:8px;border-radius:2px}
+
+/* ---- 스키마 버전 띠 ---- */
+.stripwrap{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);padding:22px 22px 18px;margin:0 0 12px}
+.strip{min-width:660px}
+.striprow{display:grid;grid-template-columns:70px 1fr;align-items:center;gap:12px;margin-bottom:9px}
+.striplab{font-family:"Noto Sans KR",sans-serif;font-size:12px;font-weight:600;color:var(--muted);text-align:right}
+.cells{display:grid;grid-template-columns:repeat(47,1fr);gap:1px}
+.cells i{height:19px;display:block;border-radius:1px}
+.axis{display:grid;grid-template-columns:70px 1fr;gap:12px;margin-top:4px}
+.axis .ticks{display:grid;grid-template-columns:repeat(47,1fr);font-family:"IBM Plex Mono",monospace;
+  font-size:9.5px;color:var(--muted)}
+.axis .ticks span{grid-row:1;text-align:center;white-space:nowrap}
+.vkey{display:flex;flex-direction:column;gap:9px;margin-top:16px;padding-top:14px;
+  border-top:1px solid var(--rule-2);font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted)}
+.vkey b{font-weight:400;display:inline-flex;align-items:center;gap:6px}
+.vkey b i{width:10px;height:10px;border-radius:2px;display:inline-block}
+
+/* ---- 품질 이슈 ---- */
+.finds{display:flex;flex-direction:column;gap:1px;background:var(--rule);border:1px solid var(--rule);margin:0 0 26px}
+.find{background:var(--surface);padding:18px 20px;display:grid;gap:4px 16px;
+  grid-template-columns:auto 1fr;align-items:baseline}
+.find .id{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);
+  font-variant-numeric:tabular-nums;padding-top:3px}
+.find .body{min-width:0}
+.find h4{font-family:"Noto Sans KR",sans-serif;font-size:15px;font-weight:600;margin:0 0 6px;line-height:1.55}
+.find p{font-size:14px;margin:0;color:var(--ink-2);max-width:48ch;
+  font-family:"Noto Sans KR",sans-serif;line-height:1.72}
+.find .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+.chip{font-family:"Noto Sans KR",sans-serif;font-size:11px;font-weight:600;padding:3px 9px;border-radius:2px}
+.chip.blocker{background:var(--crimson-soft);color:var(--crimson)}
+.chip.fix{background:var(--ochre-soft);color:var(--ochre)}
+.chip.doc{background:var(--accent-soft);color:var(--accent)}
+.scale{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted)}
+.scale.ko{font-family:"Noto Sans KR",sans-serif;font-size:12px}
+
+/* ---- 화면 ---- */
+.screens{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule);margin:0 0 26px}
+.screen{background:var(--surface);padding:20px 22px}
+.screen h4{font-family:"Noto Sans KR",sans-serif;font-size:16px;font-weight:600;margin:0 0 8px;
+  display:flex;align-items:baseline;gap:11px}
+.screen h4 .k{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--accent);font-weight:400}
+.screen p{font-family:"Noto Sans KR",sans-serif;font-size:14px;line-height:1.75;color:var(--ink-2);
+  margin:0;max-width:48ch}
+
+/* ---- 단계 ---- */
+.phases{border:1px solid var(--rule);background:var(--surface);margin:0 0 26px}
+.phase{display:grid;grid-template-columns:44px 1fr 82px;gap:16px;padding:16px 20px;
+  border-bottom:1px solid var(--rule-2);align-items:baseline}
+.phase:last-child{border-bottom:0}
+.phase .p{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--accent);font-variant-numeric:tabular-nums}
+.phase .t{font-family:"Noto Sans KR",sans-serif;font-size:14px;line-height:1.72;color:var(--ink-2)}
+.phase .t b{color:var(--ink);font-weight:600;display:block;font-size:15px;margin-bottom:3px}
+.phase .d{font-family:"Noto Sans KR",sans-serif;font-size:12.5px;color:var(--muted);text-align:right;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* ---- 결정 사항 ---- */
+.qs{counter-reset:q;margin:0 0 26px;padding:0;list-style:none}
+.qs li{counter-increment:q;position:relative;padding:0 0 20px 42px;margin:0}
+.qs li::before{content:"Q" counter(q);position:absolute;left:0;top:3px;
+  font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--accent)}
+.qs h4{font-family:"Noto Sans KR",sans-serif;font-size:15.5px;font-weight:600;margin:0 0 6px;
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;line-height:1.5}
+.qs .ans{font-size:11px;font-weight:600;background:var(--accent-soft);color:var(--accent);
+  padding:3px 9px;border-radius:2px}
+.qs li.answered::before{color:var(--accent);opacity:.55}
+.qs li.answered h4{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--rule)}
+.qs li.answered h4 .ans{text-decoration:none;color:var(--accent)}
+.qs p{font-family:"Noto Sans KR",sans-serif;font-size:14px;color:var(--ink-2);margin:0;
+  line-height:1.75;max-width:48ch}
+
+footer{grid-column:1/-1;margin-top:56px;padding-top:22px;border-top:1px solid var(--rule);
+  font-family:"Noto Sans KR",sans-serif;font-size:12.5px;color:var(--muted);display:flex;
+  flex-wrap:wrap;gap:8px 26px;line-height:1.6}
+
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="shell">
+
+  <header class="mast">
+    <p class="eyebrow">데이터 검토 및 구축 계획</p>
+    <h1>Glassdoor 패널 설계도</h1>
+    <p class="standfirst">Coresignal이 제공한 Glassdoor 기업·리뷰 데이터 47개 월별 빈티지를 처음부터 끝까지
+      읽었습니다. 무엇이 들어 있는지, 무엇이 잘못되어 있는지, 그리고 이것을 질의 가능한 패널과 WRDS 방식의
+      조회 화면으로 바꾸는 방법을 정리했습니다.</p>
+    <p class="byline"><span><b>작성</b> 2026년 9월 3일</span>
+      <span><b>수록 기간</b> 2022-06 → 2026-04</span>
+      <span><b>출처</b> Coresignal · Glassdoor</span>
+      <span><b>단계</b> 구현 착수 전</span></p>
+    <p class="langlink"><a href="./blueprint.html">Read this in English →</a></p>
+  </header>
+
+  <div class="figures">
+    <div class="fig"><span class="n">47</span><span class="l">월별 빈티지</span></div>
+    <div class="fig"><span class="n">185만</span><span class="l">기업 (최신 시점)</span></div>
+    <div class="fig"><span class="n">4,228만</span><span class="l">리뷰 (최신 시점)</span></div>
+    <div class="fig"><span class="n">288 GB</span><span class="l">압축 상태 용량</span></div>
+    <div class="fig"><span class="n">16</span><span class="l">스키마 버전</span></div>
+  </div>
+
+  <nav class="toc" aria-label="목차">
+    <ol>
+      <li><a href="#finding"><span>01</span>핵심 발견</a></li>
+      <li><a href="#disk"><span>02</span>디스크 위의 실체</a></li>
+      <li><a href="#growth"><span>03</span>시점별 수록 범위</a></li>
+      <li><a href="#drift"><span>04</span>스키마 변동</a></li>
+      <li><a href="#quality"><span>05</span>데이터 품질</a></li>
+      <li><a href="#db"><span>06</span>데이터베이스 설계</a></li>
+      <li><a href="#web"><span>07</span>웹 인터페이스</a></li>
+      <li><a href="#plan"><span>08</span>단계별 계획</a></li>
+      <li><a href="#decide"><span>09</span>필요한 결정</a></li>
+      <li><a href="#now"><span>10</span>정리 작업</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <section id="finding">
+      <h2><span class="num">01</span>모든 설계를 좌우한 발견</h2>
+      <p class="dek">스키마 작업에 앞서 반드시 확인해야 할 구조적 질문이 하나 있었습니다. 월별 디렉터리는
+        증분(delta)인가, 전체 덤프인가?</p>
+
+      <div class="callout">
+        <span class="tag">가정이 아니라 실측</span>
+        <p>모든 월별 디렉터리는 <strong>누적 전체 재덤프</strong>입니다. 2022-06과 2022-07 빈티지 전체를
+          레코드 단위로 비교한 결과는 다음과 같습니다.</p>
+      </div>
+
+<pre><i># 202206 vs 202207 — 두 피드 전량, doc 페이로드 해시 비교</i>
+                <b>기업</b>                  <b>리뷰</b>
+  202206          829,559             17,096,860
+  202207          829,589             17,228,547
+  공통            829,559             17,096,860
+  사라짐                <b>0</b>                     <b>0</b>
+  신규                 30                131,687
+  doc 동일        826,000  <b>99.57%</b>   17,076,493  <b>99.88%</b>
+  doc 변경          <em>3,559</em>   0.43%       <em>20,367</em>   0.12%</pre>
+
+      <p>어떤 레코드도 사라지지 않으며, 페이로드는 사실상 정적입니다. 기업은 한 달에 1,000건 중 약 4건,
+        리뷰는 1,000건 중 1건 남짓만 바뀝니다. 47개 스냅샷을 있는 그대로 저장하면 기업 약 5,600만 행,
+        <strong>리뷰 약 14억 행</strong>이 되는데 그중 99% 이상이 이미 존재하는 행의 완전한 중복입니다.</p>
+
+      <div class="callout warn">
+        <span class="tag">변경 감지에 숨어 있는 함정</span>
+        <p><code>doc</code>만이 아니라 <em>레코드 전체</em>를 해시하면 리뷰의 월간 변경률이 11.7%로 나옵니다.
+          이는 재수집 때마다 갱신되는 <code>_meta.updated_at_timestamp</code> 때문이지 내용이 바뀐 것이
+          아닙니다. 버전 관리는 레코드가 아니라 페이로드 기준이어야 합니다.</p>
+      </div>
+
+      <p>따라서 설계 원칙은 <strong>한 번만 적재하고 변경분만 버전으로 남긴다</strong>입니다. 행 해시를 키로
+        한 Type-2 SCD를 적용하면 기업은 약 190만 기준 행에 수백만 변경 행, 리뷰는 실제 존재하는 약 4,200만
+        건으로 줄어듭니다. "2024-03 시점의 패널"은 여전히 조회할 수 있으며, 저장된 사본이 아니라 범위 조건이
+        됩니다.</p>
+    </section>
+
+    <section id="disk">
+      <h2><span class="num">02</span>디스크 위에 실제로 있는 것</h2>
+      <p class="dek">두 개의 병렬 트리, 빈티지마다 하나의 디렉터리, 세 단계 아래에 gzip JSON 샤드. 그리고
+        빈티지마다 겉보기보다 훨씬 유용한 부속 파일 네 개가 함께 들어 있습니다.</p>
+
+<pre>glassdoor/
+  Glassdoor Data Dictionaries.pdf     <i># Coresignal 문서: 기업 7p + 리뷰 4p</i>
+  companies/<b>YYYYMM</b>/&lt;3-hex&gt;/&lt;md5&gt;.json.gz
+  reviews/<b>YYYYMM</b>/&lt;3-hex&gt;/&lt;md5&gt;.json.gz
+  reviews/companies/202601/           <em># companies/202601의 중복 — 제거 완료</em>
+  *.zip                               <i># 원본 아카이브 약 288 GB, 검증 후 삭제 가능</i></pre>
+
+      <h3>부속 파일</h3>
+      <div class="tw"><table>
+        <thead><tr><th>파일</th><th>용도</th></tr></thead>
+        <tbody>
+          <tr><td><code>ids_*.txt</code></td><td>해당 빈티지의 전체 레코드 id 목록. 정확한 행 수를 공짜로 얻을 수 있고, ETL의 적재 완결성 검증 기준이 됩니다.</td></tr>
+          <tr><td><code>glassdoor_*_latest.json</code></td><td>레코드의 JSON Schema. <strong>낡았습니다.</strong> 리뷰 쪽 스키마에는 <code>language</code>, <code>author_status</code>, <code>advice_to_management</code>가 빠져 있습니다. 이 파일이 아니라 데이터를 신뢰해야 합니다.</td></tr>
+          <tr><td><code>CHANGELOG.*.yaml</code></td><td>Coresignal이 직접 작성한 필드 변경 이력. 마지막 항목이 2022-03이라 §04에서 관찰된 변동은 전혀 담고 있지 않습니다.</td></tr>
+          <tr><td><code>DISCLAIMER.txt</code></td><td>라이선스 조항. 아래 상자를 참고하십시오.</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="callout warn">
+        <span class="tag">라이선스가 배포 방식을 결정합니다</span>
+        <p>모든 빈티지에는 데이터가 저작권과 영업비밀의 보호를 받으며, 데이터베이스 구조도 데이터 자체도
+          공개하거나 재배포할 수 없다는 고지가 붙어 있습니다. 따라서 웹 인터페이스는 처음부터 인증과 접근
+          기록을 갖추어야 합니다. 마지막에 덧붙일 장식이 아니라 전제 조건입니다.</p>
+      </div>
+
+      <h3>샤드 형식</h3>
+      <p>모든 <code>.json.gz</code>는 <strong>정확히 10,000건</strong>을 담고 있으며, JSON 배열을 예쁘게 출력한
+        형태로 한 줄에 레코드 하나씩(앞에 탭, 끝에 쉼표) 들어 있습니다. 덕분에 로더는 줄 단위로 스트리밍할 수
+        있어 증분 JSON 파서가 필요 없고, 샤드는 그대로 병렬 처리됩니다. 이 장비에서 단일 스레드 실측 처리량은
+        gunzip·id 추출·해싱을 모두 포함해 <strong>초당 약 43,500건</strong>이었습니다. 47개 빈티지 전체를 한
+        번 훑는 데 순차로 약 9시간, 워커 8개로는 약 1.5시간입니다.</p>
+      <p>함정이 하나 있습니다. 디렉터리 버킷은 <em>파일명</em>의 앞 세 자리 16진수이고, 파일명은
+        <code>md5(첫 레코드의 doc.id)</code>입니다. 내용 해시 버킷이 아닙니다. 청크 경계와 파일명이 빈티지마다
+        달라지므로 두 달치를 파일명으로 비교할 수 없습니다.</p>
+    </section>
+
+    <section id="growth">
+      <h2><span class="num">03</span>시점에 따른 수록 범위</h2>
+      <p class="dek">증가는 자연스럽지 않고 계단식입니다. Coresignal이 수록 범위를 여러 차례 넓혔고, 그 계단은
+        기업의 시장 진입이 아니라 수집 이벤트입니다. 그대로 두면 패널이 이를 진입으로 읽습니다.</p>
+
+      <div class="key">
+        <span><i style="background:var(--accent)"></i>기업 (왼쪽 축)</span>
+        <span><i style="background:var(--ochre)"></i>리뷰 (오른쪽 축)</span>
+      </div>
+      <figure>
+        <svg viewBox="0 0 880 330" role="img" aria-label="2022-06부터 2026-04까지 월별 빈티지의 기업 수와 리뷰 수">
+          <g id="chart"></g>
+        </svg>
+        <figcaption>각 빈티지의 <code>ids_*.txt</code> 매니페스트에서 직접 센 레코드 수. 점선은 수록 범위
+          확대 시점으로, 초록은 기업·주황은 리뷰입니다. 평평한 구간은 실제입니다. 2022-12부터 2023-03까지,
+          그리고 2023-08부터 2023-10까지는 동일한 내용의 재전달입니다.</figcaption>
+      </figure>
+
+      <p>계단의 폭이 큽니다. 기업은 2023-07에 <strong>+13.4만</strong>, 2023-11에 <strong>+23.1만</strong>,
+        2025-03에 <strong>+13.0만</strong>, 2025-10에 <strong>+38.3만</strong>이 늘었고, 리뷰는 2023-06에
+        <strong>+540만</strong>, 2026-03에 <strong>+324만</strong>이 늘었습니다. 어떤 기업이 처음 등장한
+        시점을 진입 사건으로 해석하거나 리뷰 급증을 게시량 증가로 해석하면, 실제로는 이 수집 이벤트를 집는
+        셈이 됩니다. 패널에는 <code>first_vintage</code> 열이 명시적으로 필요하고, 코드북에는 이 날짜들이
+        기록되어야 합니다.</p>
+    </section>
+
+    <section id="drift">
+      <h2><span class="num">04</span>스키마 변동</h2>
+      <p class="dek">기업 8개, 리뷰 8개의 추출 스키마가 존재합니다. 과거 레코드는 소급 갱신되지 않기 때문에
+        2026년 빈티지 안에도 2021년 스키마로 만들어진 레코드가 남아 있고, 두 가지 명명 규칙이 한 파일 안에
+        나란히 존재합니다.</p>
+
+      <div class="stripwrap">
+        <div class="strip">
+          <div class="striprow"><span class="striplab">기업</span><span class="cells" id="cstrip"></span></div>
+          <div class="striprow"><span class="striplab">리뷰</span><span class="cells" id="rstrip"></span></div>
+          <div class="axis"><span></span><span class="ticks" id="ticks"></span></div>
+          <div class="vkey" id="vkey"></div>
+        </div>
+      </div>
+      <p style="font-size:13.5px;color:var(--muted);font-family:'Noto Sans KR',sans-serif;max-width:48ch;line-height:1.75">
+        색은 각 빈티지에서 <em>가장 많은</em> <code>_meta.version_id</code>를 나타냅니다. 소수 버전은 계속
+        남아 있습니다. 2026-04 시점에도 리뷰의 0.7%는 여전히 2022년 스키마입니다.</p>
+
+      <h3>기업</h3>
+      <div class="tw"><table>
+        <thead><tr><th>빈티지</th><th>변경 내용</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">2023-05</td><td><code>rating.star_distribution</code>과 <code>percentage_distribution</code>이 <code>rating.overall</code> 밖으로 올라옴. 이후 약 2년간 두 중첩 구조가 공존</td></tr>
+          <tr><td class="mono">2023-09</td><td><code>_meta.is_deleted</code> 추가</td></tr>
+          <tr><td class="mono">2024-05</td><td><code>doc.main_source_id</code> 추가 — 지점에서 모기업 프로필을 가리키는 포인터로, 4,998개 기업에서 <code>source_id</code>와 다름</td></tr>
+          <tr><td class="mono">2024-05 → 2025-02</td><td><code>contact_info</code>에 instagram·linkedin·youtube가 추가되었다가 제거되고, <code>28ff7dfe</code>에서는 객체 자체가 사라짐</td></tr>
+          <tr><td class="mono">2024-12</td><td><code>doc.affiliated_companies[]</code> 추가</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>리뷰</h3>
+      <div class="tw"><table>
+        <thead><tr><th>빈티지</th><th>변경 내용</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">2023-06</td><td><code>recommend.ratingCeo</code> → <code>rating_ceo</code>. 카멜케이스에서 스네이크케이스로 바뀌었고 두 형태가 계속 공존</td></tr>
+          <tr><td class="mono">2023-08</td><td><code>author_status</code>, <code>is_current</code>, <code>author_employment_length</code> 추가</td></tr>
+          <tr><td class="mono">2023-09</td><td><code>language</code>와 <code>_meta.is_deleted</code> 추가</td></tr>
+          <tr><td class="mono">2023-10</td><td><code>work_text</code> 폐기 — 갱신되지 않은 과거 레코드에는 그대로 남아 있음</td></tr>
+          <tr><td class="mono">2024-02</td><td><code>advice_to_management</code> 추가</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="callout warn">
+        <span class="tag">패널 작업에 미치는 영향</span>
+        <p>2023년 이후에 추가된 변수는 과거 빈티지에서는 물론이고 <em>최신 빈티지 안의 오래된 레코드에서도</em>
+          구조적으로 결측입니다. 정규화 로직은 빈티지가 아니라 <code>version_id</code>를 기준으로 분기해야
+          합니다. 코드북에는 변수별 <code>first_available</code> 열이 필요하고, 추출 기능은 내려받는 파일마다
+          수록 범위 안내를 함께 붙여야 합니다.</p>
+      </div>
+    </section>
+
+    <section id="quality">
+      <h2><span class="num">05</span>데이터 품질</h2>
+      <p class="dek">문서가 아니라 데이터에서 직접 확인한 이슈 15건입니다. 이 중 셋은 놓치면 결과를 조용히
+        오염시킵니다.</p>
+
+      <div class="finds" id="finds"></div>
+    </section>
+
+    <section id="db">
+      <h2><span class="num">06</span>데이터베이스 설계</h2>
+      <p class="dek">PostgreSQL을 원본 시스템으로 두고, 대량 추출용 고속 경로로 Parquet 사본을 둡니다.</p>
+
+      <p>Postgres는 동시 사용자, 인증, 행 수준 접근 제어, 감사 로그를 제공하며 리뷰 본문 전문 검색도
+        <code>tsvector</code>에 GIN 인덱스를 걸면 충분히 감당합니다. 같은 테이블을 파티션된 Parquet으로 복사해
+        DuckDB로 읽으면 대용량 CSV 추출이 빨라지고, 오프라인 분석 경로도 열립니다. 예상 용량은 Postgres 약
+        <strong>100 GB</strong>(이 중 본문과 인덱스를 포함한 리뷰가 60~80 GB), Parquet+zstd 약
+        <strong>35 GB</strong>입니다.</p>
+      <p>전체 본문 스캔만 놓고 보면 ClickHouse가 둘보다 빠르지만, 소규모 연구 그룹이 감당할 만한 운영 부담은
+        아닙니다. 전문 검색이 실제로 느리다고 판명될 때만 다시 검토하면 됩니다.</p>
+
+      <h3>핵심 테이블</h3>
+<pre><b>vintage</b>(vintage_id, yyyymm, object, n_records_manifest, n_records_loaded, loaded_at)
+
+<b>company</b>(company_sk, source_id UNIQUE, main_source_id, first_vintage, last_vintage,
+        is_deleted, url, glassdoor_slug)
+<b>company_version</b>(company_sk, valid_from_vintage, valid_to_vintage, row_hash,
+        name, description, mission, website, type, founded, industry,
+        employee_count_band, revenue_band,
+        city, region, country,                    <i>-- 파싱·표준화, 이슈 08 참조</i>
+        ceo, ceo_approval_pct,
+        job_count, salary_count, benefit_count, review_count, interview_count,
+        rating_overall, rating_culture_values, rating_career_opportunities,
+        rating_compensation_benefits, rating_senior_management,
+        rating_work_life_balance, rating_diversity_inclusion,
+        pct_biz_outlook, pct_ceo_approval, pct_recommend,
+        stars_1..stars_5, pct_stars_1..pct_stars_5,
+        schema_version_id,
+        PRIMARY KEY (company_sk, valid_from_vintage))
+<b>company_affiliation</b>(company_sk, affiliate_url, affiliate_name, is_parent,
+        first_vintage, last_vintage)
+
+<b>review</b>(review_sk, source_id UNIQUE, company_sk, company_id_raw,
+        review_date, review_year, review_month, language,
+        author_location, author_title, author_status, is_current,
+        author_employment_length,
+        star_overall, star_culture_values, star_career_opportunities,
+        star_compensation_benefits, star_senior_management,
+        star_work_life_balance, star_diversity_inclusion,
+        rec_ceo, rec_business_outlook, rec_recommend_to_friend, recommend_raw,
+        first_vintage, last_vintage, is_deleted, schema_version_id)
+        <b>PARTITION BY RANGE</b> (review_year)                 <i>-- 2008 … 현재</i>
+<b>review_text</b>(review_sk, summary, pros, cons, advice_to_management, work_text,
+        search_tsv)                               <i>-- GIN 인덱스</i>
+<b>review_version</b>(review_sk, valid_from_vintage, valid_to_vintage, row_hash, …)
+        <i>-- 내용이 실제로 바뀐 리뷰만 적재</i>
+
+<i>-- 조회 화면용 구체화 뷰</i>
+<b>company_month</b>(company_sk, yyyymm, &lt;company_version 필드&gt;)
+<b>company_review_month</b>(company_sk, yyyymm, n_reviews, avg_overall, …)</pre>
+
+      <p><code>industry</code>, <code>company_type</code>, <code>employee_count_band</code>,
+        <code>revenue_band</code>, <code>country</code>는 참조 테이블로 분리해, 화면의 모든 필터가 자유
+        입력란이 아닌 선택 목록이 되도록 합니다.</p>
+
+      <h3>중요한 인덱스</h3>
+      <ul class="plain">
+        <li><code>review (company_sk, review_date)</code> — 압도적으로 가장 많이 쓰이는 접근 경로</li>
+        <li>각 파티션 내부의 <code>review (review_date)</code></li>
+        <li><code>review (star_overall)</code>, <code>(language)</code>, <code>(author_status)</code> — 선택도가 높은 필터</li>
+        <li><code>review_text.search_tsv</code>의 GIN 인덱스 — 장점·단점·요약·경영진 조언 통합 키워드 검색</li>
+        <li>자동완성을 위한 <code>company.name</code> trigram 인덱스와 <code>company_version</code>의 SCD 구간 인덱스</li>
+      </ul>
+    </section>
+
+    <section id="web">
+      <h2><span class="num">07</span>웹 인터페이스</h2>
+      <p class="dek">기준은 하나입니다. SQL을 한 번도 써본 적 없는 사람이 표본을 정의하고 변수를 고른 뒤 CSV를
+        받아 갈 수 있어야 합니다. 화면 다섯 개면 됩니다.</p>
+
+      <div class="screens">
+        <div class="screen"><h4><span class="k">01</span>기업 찾기</h4>
+          <p>이름 자동완성과 함께 산업, 국가, 규모 구간, 매출 구간, 설립 연도, 평점 범위로 필터링합니다.
+            필터를 건너뛰고 Glassdoor 기업 id 목록을 붙여넣거나 업로드해 표본을 바로 정의할 수도 있습니다.</p></div>
+        <div class="screen"><h4><span class="k">02</span>리뷰 질의 작성</h4>
+          <p>표본 × 기간 × 필터(종합·세부 평점, 추천 여부, CEO 지지, 사업 전망, 재직 형태, 현직/전직, 근속,
+            언어, 본문 유무)에 더해 장점·단점·요약·경영진 조언 안의 키워드 검색까지 조합합니다. 변수는 분류별
+            체크박스 목록에서 고르고, 확정 전에 예상 행 수를 실시간으로 확인합니다.</p></div>
+        <div class="screen"><h4><span class="k">03</span>기업 패널 작성</h4>
+          <p>원본 Glassdoor에서는 얻을 수 없는 기능입니다. 기업, 기간, 주기, 변수를 고르면 버전 이력에서
+            균형 잡힌 월별 패널을 구성해 줍니다. §03과 §04의 수록 범위 단절 및 최초 제공 시점 경고가 결과물에
+            함께 붙습니다.</p></div>
+        <div class="screen"><h4><span class="k">04</span>다운로드 센터</h4>
+          <p>규모가 조금이라도 있는 요청은 모두 백그라운드 작업으로 처리합니다. WRDS와 같은 방식입니다. CSV,
+            TSV, Parquet, Stata 형식을 gzip으로 압축해 만료되는 링크로 제공하고, 결과를 재현하고 인용할 수
+            있도록 질의 조건을 결과물과 함께 저장합니다.</p></div>
+        <div class="screen"><h4><span class="k">05</span>코드북</h4>
+          <p>스키마와 §05의 프로파일링 통계에서 자동 생성합니다. 변수마다 자료형, 결측률, 센티널 처리 방식,
+            그리고 애초에 어느 빈티지부터 존재하는지를 보여줍니다.</p></div>
+      </div>
+
+      <p>여기에 더해, 별도 DB 역할과 구문 제한 시간·행 수 상한을 건 읽기 전용 SQL 콘솔을 상급 사용자에게
+        제공합니다. 로그인과 약관 동의는 필수이며, 다운로드 감사 로그는 라이선스상 사실상 요구 사항입니다.</p>
+      <p>스택은 FastAPI와 SQLAlchemy에 JSON→SQL 질의 변환 계층, 추출 작업용 <code>arq</code> 또는 Celery
+        워커, 그리고 서버 렌더링 HTMX 프런트엔드를 제안합니다. 빠르게 만들 수 있고 유지할 SPA가 없습니다.
+        React 프런트엔드가 꼭 필요하다면 물론 바꿀 수 있습니다.</p>
+    </section>
+
+    <section id="plan">
+      <h2><span class="num">08</span>단계별 계획</h2>
+      <p class="dek">엔지니어 한 명 기준으로 사내에서 쓸 수 있는 서비스까지 대략 8~11주입니다. 각 단계는 앞
+        단계에 실제로 의존하므로 순서를 지켜야 합니다.</p>
+
+      <div class="phases">
+        <div class="phase"><span class="p">P0</span><span class="t"><b>결정과 환경 준비</b>§09를 확정하고 Postgres와 오브젝트 스토리지를 준비하며 저장소를 정리합니다.</span><span class="d">1~2일</span></div>
+        <div class="phase"><span class="p">P1</span><span class="t"><b>ETL 기반</b>16개 스키마 버전을 모두 다루는 스트리밍 리더와 버전 인식 정규화기. 한 빈티지를 끝까지 적재하고 <code>ids_*.txt</code>와 대조합니다.</span><span class="d">1주</span></div>
+        <div class="phase"><span class="p">P2</span><span class="t"><b>전체 이력 적재</b>47개 빈티지에 걸친 중복 제거와 SCD-2, 빈티지 단위 병렬 처리, 고아 레코드와 이상치 수집. 한 번 훑는 데 약 1.5시간이며 여러 번 반복될 것으로 봅니다.</span><span class="d">1~2주</span></div>
+        <div class="phase"><span class="p">P3</span><span class="t"><b>인덱스·패널·코드북</b>파티션, 구체화된 패널과 집계, QA 리포트, 자동 생성 코드북.</span><span class="d">1주</span></div>
+        <div class="phase"><span class="p">P4</span><span class="t"><b>질의 API</b>표본 정의, 변수 선택, 행 수 추정, 추출 작업 큐.</span><span class="d">1~2주</span></div>
+        <div class="phase"><span class="p">P5</span><span class="t"><b>웹 UI</b>§07의 화면 다섯 개.</span><span class="d">2~3주</span></div>
+        <div class="phase"><span class="p">P6</span><span class="t"><b>접근 제어</b>인증, 약관 동의, 감사 로그, 다운로드 만료, 배포.</span><span class="d">1주</span></div>
+        <div class="phase"><span class="p">P7</span><span class="t"><b>월별 갱신 자동화</b>새 빈티지 수집, SCD 행 마감과 개시, 구체화 뷰 갱신, 변경 리포트 발행.</span><span class="d">3~5일</span></div>
+      </div>
+
+      <div class="callout">
+        <span class="tag">검증 관문</span>
+        <p>P1과 P2는 모든 빈티지에 대해 다음이 성립하기 전까지 완료가 아닙니다. 적재된 행 수가
+          <code>wc -l ids_*.txt</code>와 일치할 것. 매니페스트의 모든 <code>source_id</code>가 해석될 것.
+          2008-01부터 현재까지의 범위를 벗어난 날짜 파티션에 리뷰가 들어가지 않을 것. 센티널 값의 개수가
+          §05에 기록된 프로파일링 기준선과 일치할 것.</p>
+      </div>
+    </section>
+
+    <section id="decide">
+      <h2><span class="num">09</span>P1 착수 전에 필요한 결정</h2>
+      <p class="dek">이 검토를 시작할 때 여섯 가지였고, 그중 하나는 실측으로 해결되었습니다. 나머지는 설계보다
+        운영 방식에 더 크게 영향을 줍니다.</p>
+
+      <ol class="qs">
+        <li class="answered"><h4>리뷰는 전체 이력인가, 최신 상태만인가? <span class="ans">해결 — 이력을 남깁니다</span></h4>
+          <p>리뷰 페이로드 변경률은 월 0.12%로, 2022-06과 2022-07 사이에 20,367행이 바뀌었습니다.
+            <code>review_version</code> 테이블은 47개 빈티지 전체에서 100만 행 안팎이면 충분하므로 부담이
+            없습니다. 만드는 쪽이 맞습니다.</p></li>
+        <li><h4>Postgres인가, DuckDB만인가?</h4>
+          <p>동시 사용자가 몇 명입니까? 실제로 연구자 1~3명 규모라면 Parquet 위의 DuckDB에 얇은 프런트엔드를
+            얹는 구성으로 구축 비용이 대략 절반이 됩니다.</p></li>
+        <li><h4>어디에서 운영합니까?</h4>
+          <p>여유 공간이 5.5 TB인 이 D: 볼륨의 로컬 서버입니까, 기관 서버나 클라우드입니까? 이 선택이 인증
+            방식을 결정합니다.</p></li>
+        <li><h4>누가 로그인할 수 있습니까?</h4>
+          <p>Coresignal 약관을 보면 라이선스를 보유한 기관 내부의 기명 계정으로 한정하는 것이 자연스럽습니다.
+            P6이 끝난 뒤가 아니라 그 전에 확인해 두는 편이 좋습니다.</p></li>
+        <li><h4>추출 상한은 어떻게 둡니까?</h4>
+          <p>다운로드 1건당 행 수 상한, 보관 기간, 그리고 리뷰 원문을 대량으로 내보낼 수 있는지 아니면 집계만
+            허용할지를 정해야 합니다.</p></li>
+        <li><h4><code>.zip</code> 아카이브는 삭제합니까?</h4>
+          <p>추출된 트리를 바이트 단위로 검증한 뒤 삭제하면 약 288 GB를 회수할 수 있습니다.</p></li>
+      </ol>
+    </section>
+
+    <section id="now">
+      <h2><span class="num">10</span>지금 끝낸 정리 작업</h2>
+      <ul class="plain">
+        <li><strong>완료.</strong> <code>reviews/companies/202601/</code>을 제거했습니다. 삭제 전에
+          <code>companies/202601/</code>과 동일함을 확인했습니다. 양쪽 모두 189개 파일, 309,891,751 바이트,
+          내용 해시 일치.</li>
+        <li><strong>완료.</strong> <code>companies/</code>, <code>reviews/</code>, <code>*.zip</code>,
+          <code>*.pdf</code>에 대한 <code>.gitignore</code>를 추가했습니다. 저장소에 잡히던 약 290 GB의
+          미추적 데이터가 사라졌습니다.</li>
+        <li><strong>완료, 다만 범위를 조정했습니다.</strong> 빈티지별 스키마·체인지로그·고지 파일은
+          <code>provenance/</code>에 넣어 버전 관리합니다. 282개 파일, 552 KB입니다. 반면
+          <code>ids_*.txt</code> 매니페스트는 작지 않습니다. 기업이 1.46 GB, 리뷰가 61.4 GB로 합계 63 GB라
+          커밋할 수 없습니다. 대신 파일별 바이트 수와 SHA-256을
+          <code>provenance/manifest-digests.csv</code>에 기록해, 원본은 디스크에 두면서도 검증 가능성은
+          유지했습니다.</li>
+      </ul>
+    </section>
+
+  </main>
+
+  <footer>
+    <span>Glassdoor 패널 설계도</span>
+    <span>모든 수치는 2026년 9월 추출된 트리에서 직접 실측</span>
+    <span>Coresignal 데이터 — 내부 사용 전용, 재배포 불가</span>
+  </footer>
+</div>
+
+<script>
+const MONTHS = (() => {
+  const out = []; let y = 2022, m = 6;
+  for (let i = 0; i < 47; i++) { out.push(y * 100 + m); m++; if (m > 12) { m = 1; y++; } }
+  return out;
+})();
+
+const COMPANIES = [829559,829589,829512,829628,829682,829682,829685,829685,829685,829685,
+  830171,831264,831303,965326,965329,965329,965329,1196254,1216266,1216266,1216349,1217085,
+  1222402,1225185,1226062,1227214,1227215,1227360,1227396,1227427,1227499,1227518,1227544,
+  1357863,1404635,1415864,1415944,1415957,1415969,1416490,1799709,1845539,1847826,1849296,
+  1850230,1852076,1852962];
+
+const REVIEWS = [17096860,17228547,17938738,18019810,18653905,19053589,19153248,19480851,
+  19783365,20008203,20405410,20734396,26149464,27019194,27019194,27611343,28017794,28412521,
+  28789116,29389282,29817070,29874009,30294352,30712701,31125909,31548102,31722807,32424087,
+  32891695,33482875,33731990,34393872,34764776,35679095,35993023,36085151,36468200,36840596,
+  37159458,37441687,37733855,38228671,38493041,38720200,38890641,42128694,42282291];
+
+/* ---------- 증가 추이 차트 ---------- */
+(function () {
+  const W = 880, H = 330, L = 62, R = 66, T = 18, B = 40;
+  const iw = W - L - R, ih = H - T - B;
+  const g = document.getElementById('chart');
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (n, a) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
+
+  const n = COMPANIES.length;
+  const x = i => L + (iw * i) / (n - 1);
+  const cMax = 2000000, rMax = 45000000;
+  const yc = v => T + ih - (v / cMax) * ih;
+  const yr = v => T + ih - (v / rMax) * ih;
+
+  for (let v = 0; v <= 2000000; v += 500000) {
+    g.appendChild(el('line', { x1: L, x2: L + iw, y1: yc(v), y2: yc(v), stroke: 'var(--rule-2)', 'stroke-width': 1 }));
+    const t = el('text', { x: L - 12, y: yc(v) + 4, 'text-anchor': 'end', fill: 'var(--muted)',
+      'font-family': 'IBM Plex Mono, monospace', 'font-size': 10.5 });
+    t.textContent = (v / 1e4).toFixed(0) + '만'; g.appendChild(t);
+  }
+  for (let v = 0; v <= 45000000; v += 15000000) {
+    const t = el('text', { x: L + iw + 12, y: yr(v) + 4, fill: 'var(--muted)',
+      'font-family': 'IBM Plex Mono, monospace', 'font-size': 10.5 });
+    t.textContent = (v / 1e4).toFixed(0) + '만'; g.appendChild(t);
+  }
+
+  const path = (vals, sc) => vals.map((v, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + sc(v).toFixed(1)).join(' ');
+
+  const area = path(COMPANIES, yc) + ` L ${x(n - 1).toFixed(1)} ${T + ih} L ${L} ${T + ih} Z`;
+  g.appendChild(el('path', { d: area, fill: 'var(--accent-soft)', stroke: 'none' }));
+  g.appendChild(el('path', { d: path(COMPANIES, yc), fill: 'none', stroke: 'var(--accent)',
+    'stroke-width': 2, 'stroke-linejoin': 'round' }));
+
+  g.appendChild(el('path', { d: path(REVIEWS, yr), fill: 'none', stroke: 'var(--ochre)',
+    'stroke-width': 2, 'stroke-linejoin': 'round' }));
+  g.appendChild(el('circle', { cx: x(n - 1), cy: yr(REVIEWS[n - 1]), r: 3.5, fill: 'var(--ochre)' }));
+  g.appendChild(el('circle', { cx: x(n - 1), cy: yc(COMPANIES[n - 1]), r: 3.5, fill: 'var(--accent)' }));
+
+  [[13, '+13.4만'], [17, '+23.1만'], [33, '+13.0만'], [40, '+38.3만']].forEach(([i, lab]) => {
+    g.appendChild(el('line', { x1: x(i), x2: x(i), y1: T, y2: T + ih, stroke: 'var(--accent)',
+      'stroke-width': 1, 'stroke-dasharray': '2 4', opacity: .5 }));
+    const t = el('text', { x: x(i), y: T - 4, 'text-anchor': 'middle', fill: 'var(--accent)',
+      'font-family': 'Noto Sans KR, sans-serif', 'font-size': 9.5 });
+    t.textContent = lab; g.appendChild(t);
+  });
+
+  [[12, '+540만'], [45, '+324만']].forEach(([i, lab]) => {
+    g.appendChild(el('line', { x1: x(i), x2: x(i), y1: yr(REVIEWS[i]) - 6, y2: T + ih,
+      stroke: 'var(--ochre)', 'stroke-width': 1, 'stroke-dasharray': '2 4', opacity: .55 }));
+    const t = el('text', { x: x(i) + (i > 40 ? -6 : 6), y: T + ih - 8,
+      'text-anchor': i > 40 ? 'end' : 'start', fill: 'var(--ochre)',
+      'font-family': 'Noto Sans KR, sans-serif', 'font-size': 9.5 });
+    t.textContent = lab; g.appendChild(t);
+  });
+
+  g.appendChild(el('line', { x1: L, x2: L + iw, y1: T + ih, y2: T + ih, stroke: 'var(--rule)', 'stroke-width': 1 }));
+  [[0, '2022-06'], [7, '2023-01'], [19, '2024-01'], [31, '2025-01'], [43, '2026-01'], [46, '2026-04']]
+    .forEach(([i, lab]) => {
+      const t = el('text', { x: x(i), y: T + ih + 20, 'text-anchor': i === 0 ? 'start' : (i === 46 ? 'end' : 'middle'),
+        fill: 'var(--muted)', 'font-family': 'IBM Plex Mono, monospace', 'font-size': 10.5 });
+      t.textContent = lab; g.appendChild(t);
+    });
+})();
+
+/* ---------- 스키마 버전 띠 ---------- */
+(function () {
+  const cVer = [['ec3bbb21', 11], ['3c6cd3e6', 2], ['1e079f04', 4], ['2aa31948', 7],
+    ['b4615eeb', 6], ['28ff7dfe', 17]];
+  const rVer = [['a7fb44ed', 12], ['4b8bd062', 2], ['784e5060', 1], ['43b86bce', 1],
+    ['30490a9e', 4], ['454126bb', 7], ['d5d447b0', 20]];
+  const colours = ['var(--band-1)', 'var(--band-3)', 'var(--band-5)', 'var(--band-2)',
+    'var(--band-4)', 'var(--band-6)', 'var(--band-7)'];
+  const label = i => String(MONTHS[i]).slice(0, 4) + '-' + String(MONTHS[i]).slice(4);
+
+  function fill(node, bands) {
+    let i = 0;
+    bands.forEach(([ver, len], bi) => {
+      for (let k = 0; k < len; k++) {
+        const c = document.createElement('i');
+        c.style.background = colours[bi % colours.length];
+        c.title = label(i) + ' · ' + ver;
+        node.appendChild(c); i++;
+      }
+    });
+  }
+  fill(document.getElementById('cstrip'), cVer);
+  fill(document.getElementById('rstrip'), rVer);
+
+  const ticks = document.getElementById('ticks');
+  [[0, '2022-06'], [7, '23-01'], [19, '24-01'], [31, '25-01'], [43, '26-01'], [46, '26-04']]
+    .forEach(([i, lab]) => {
+      const s = document.createElement('span');
+      s.style.gridColumn = (i + 1) + ' / span 1';
+      s.textContent = lab;
+      if (i === 0) s.style.textAlign = 'left';
+      if (i === 46) s.style.textAlign = 'right';
+      ticks.appendChild(s);
+    });
+
+  const key = document.getElementById('vkey');
+  [['기업', cVer], ['리뷰', rVer]].forEach(([name, bands]) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px 14px;align-items:center;width:100%';
+    const lab = document.createElement('span');
+    lab.textContent = name;
+    lab.style.cssText = 'font-family:"Noto Sans KR",sans-serif;font-size:11.5px;font-weight:600;' +
+      'color:var(--muted);min-width:44px';
+    row.appendChild(lab);
+    bands.forEach(([v], i) => {
+      const b = document.createElement('b');
+      const sw = document.createElement('i');
+      sw.style.background = colours[i % colours.length];
+      b.appendChild(sw);
+      b.appendChild(document.createTextNode(v));
+      row.appendChild(b);
+    });
+    key.appendChild(row);
+  });
+})();
+
+/* ---------- 품질 이슈 ---------- */
+(function () {
+  const F = [
+    ['blocker', '리뷰의 자연 키는 <code>doc.id</code>가 아니라 <code>doc.source_id</code>입니다',
+      '구버전 <code>0399c54a</code>는 <code>id = glassdoor_&lt;source_id&gt;</code>를, 나머지 모든 버전은 <code>glassdoor_review_&lt;source_id&gt;</code>를 씁니다. 같은 리뷰가 빈티지마다 서로 다른 <code>id</code>를 갖게 되므로 <code>id</code> 기준으로 중복을 제거하면 이중 계상됩니다.',
+      '빈티지당 행의 0.3~3%', 'source_id를 키로 쓰고 id는 속성으로 보관'],
+    ['blocker', '<code>source_id</code> 안의 <code>RVW</code> 숫자는 고유하지 않습니다',
+      '리뷰 34만 건 표본에서 RVW 정수가 7,705건 충돌했습니다. 서로 다른 기업 슬러그 아래 같은 리뷰 번호가 존재합니다. <code>source_id</code> 문자열 전체는 고유하지만 숫자만 떼면 고유하지 않습니다.',
+      '표본 리뷰의 2.4%', 'RVW 정수만으로는 절대 키를 만들지 않기'],
+    ['blocker', '결측이 아니라 센티널 값으로 채워져 있습니다',
+      '기업 평점은 "평점 없음"을 <code>-0.1</code>로 표시하며, 2026-04 빈티지에서만 302,871개 기업이 해당합니다. <code>-1.0</code>과 <code>-10</code>도 쓰입니다. 리뷰 세부 평점은 "평가 안 함"을 <code>0</code>으로 두는데, 표본 66만 건 중 <code>culture_values</code>가 146,443건입니다. 그대로 평균 내면 모든 평균이 아래로 끌려 내려갑니다.',
+      '매우 큼', 'NULL로 변환하고 구분이 필요하면 *_raw 사본 유지'],
+    ['fix', '<code>company_id</code>가 이름과 id가 붙은 문자열인 경우가 있습니다',
+      '<code>"123456"</code> 대신 <code>"Company Name:E123456"</code> 형태가 들어 있습니다. 예를 들어 <code>"ESPN, Inc.:E13401"</code>입니다. 모두 구버전 스키마에서 나옵니다.',
+      '66만 건 중 763건 (0.12%)', ':E(\\d+)$ 정규식으로 추출하고 company_id_raw 보관'],
+    ['fix', '연결되지 않는 고아 리뷰',
+      '숫자 형태의 <code>company_id</code> 중 일부는 같은 빈티지 안에 대응하는 기업 레코드가 없습니다.',
+      '고유 id 26,563개 중 52개 (0.2%)', '고아 플래그를 달아 적재하고 조용히 버리지 않기'],
+    ['fix', '<code>recommend</code>가 평범한 문자열인 경우가 있습니다',
+      '객체가 아니라 <code>"Recommend, CEO Approval, Business Outlook"</code> 같은 문자열이 들어 있고, 공백이 두 칸인 변형도 있습니다. 별개로 전체의 26%는 <code>recommend: null</code>인데 이쪽은 진짜 결측입니다.',
+      '문자열 형태 약 0.66%, null 26%', '플래그로 파싱하되 원본 값 보관'],
+    ['fix', '<code>is_current</code>와 <code>star_rating.overall</code>의 자료형 혼재',
+      '<code>is_current</code>에는 불리언과 문자열 <code>"True"</code>·<code>"False"</code>가 섞여 있고, <code>star_rating.overall</code>에는 정수 <code>4</code>와 실수 <code>5.0</code>이 섞여 있습니다.',
+      '약 0.3% / 광범위', '적재 시 형 변환'],
+    ['fix', '<code>location</code>의 의미가 패널 중간에 바뀌었습니다',
+      '2022년 빈티지에서는 <code>"Plano, TX"</code>처럼 미국 주 약자였는데, 2023년 말이 되면 같은 필드가 <code>"City, Country"</code>가 됩니다. 국가 열을 단순하게 만들면 초기 빈티지의 모든 미국 기업이 틀리게 됩니다.',
+      '약 2023-10 이전의 모든 미국 행', '도시·지역·국가로 분해하고 주 약자를 United States로 표준화'],
+    ['fix', '동일한 내용이 재전달된 빈티지가 있습니다',
+      '기업은 2022-12부터 2023-03까지 모두 829,685건에 버전 구성까지 같고, 2023-08부터 2023-10까지는 모두 965,329건입니다. 리뷰는 2023-07과 2023-08이 똑같이 27,019,194건입니다. 이 달들에는 새로운 관측이 없으며, "변화 없음"으로 읽혀서는 안 됩니다.',
+      '최소 6개 빈티지 쌍', '매니페스트 해시로 탐지해 재전달로 표시하고 변화 시계열에서 제외'],
+    ['fix', '제어 문자와 매우 긴 본문',
+      'Coresignal도 <code>description</code>에 제어 문자가 있음을 명시합니다. 관측된 최대 길이는 <code>cons</code> 18,230자, <code>advice_to_management</code> 10,010자, <code>description</code> 6,294자, <code>mission</code> 2,754자입니다.',
+      '—', 'C0 제어 문자 제거, varchar가 아닌 text로 저장'],
+    ['doc', '함께 제공되는 JSON Schema가 낡았습니다',
+      '리뷰 스키마 파일에는 데이터에 실제로 존재하는 <code>language</code>, <code>author_status</code>, <code>is_current</code>, <code>author_employment_length</code>, <code>advice_to_management</code>가 빠져 있습니다. 체인지로그도 2022-03에서 멈춰 있습니다.',
+      '두 객체 모두', '스키마는 데이터에서 도출하고 제공 파일은 출처 기록으로만 보관'],
+    ['doc', '기업 속성의 결측이 매우 많습니다',
+      '2026-04 빈티지 기준으로 <code>industry</code>가 66%, <code>founded</code>가 87%, <code>ceo</code>가 81%, <code>mission</code>이 99%, <code>affiliated_companies</code>가 99.5% 결측입니다. <code>employee_count</code>는 22%, <code>revenue</code>는 81%가 "Unknown"입니다.',
+      '기업 185만 건', '변수별 결측률을 코드북에 공개'],
+    ['doc', '지점 프로필과 계열 관계',
+      '<code>main_source_id</code>가 <code>source_id</code>와 다른 기업이 4,998개 있습니다. 모기업을 가리키는 지점 프로필입니다. <code>affiliated_companies</code> 목록을 가진 기업은 9,314개뿐입니다.',
+      '기업의 0.3% / 0.5%', 'JSON 안에 묻어두지 말고 조인 가능한 관계로 노출'],
+    ['doc', '중복 추출된 트리 — 제거 완료',
+      '<code>reviews/companies/202601/</code>은 <code>companies/202601/</code>을 한 번 더 추출한 것이었습니다. 양쪽 모두 189개 파일, 309,891,751 바이트로 내용 해시까지 일치함을 확인한 뒤 삭제했습니다.',
+      '296 MB', '검증 후 삭제 — 완료'],
+    ['doc', '<code>ids_*.txt</code> 매니페스트는 작지 않습니다',
+      '빈티지마다 전체 레코드 id 목록이 함께 오는데, 기업이 합계 1.46 GB, 리뷰가 61.4 GB입니다. 버전 관리에 넣을 수 없으므로 파일별 SHA-256과 바이트 수만 기록했습니다.',
+      '합계 63 GB', 'provenance/manifest-digests.csv에 다이제스트 기록']
+  ];
+  const wrap = document.getElementById('finds');
+  const sevLabel = { blocker: '결과 오염', fix: 'ETL에서 처리', doc: '문서화' };
+  F.forEach((f, i) => {
+    const [sev, title, body, scale, action] = f;
+    const d = document.createElement('div'); d.className = 'find';
+    d.innerHTML = '<span class="id">' + String(i + 1).padStart(2, '0') + '</span>' +
+      '<div class="body"><h4>' + title + '</h4><p>' + body + '</p>' +
+      '<div class="meta"><span class="chip ' + sev + '">' + sevLabel[sev] + '</span>' +
+      '<span class="scale ko">' + scale + '</span>' +
+      '<span class="scale ko">→ ' + action + '</span></div></div>';
+    wrap.appendChild(d);
+  });
+})();
+</script>
+
+</body>
+</html>

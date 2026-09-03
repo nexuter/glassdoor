@@ -1,0 +1,23 @@
+# ---------------------------------------------------------------------------
+# Licensed Coresignal extracts — ~288 GB, never committed.
+# The data is subject to the terms in provenance/*/*/DISCLAIMER.txt: it may not
+# be redistributed, so it must not reach a remote through this repository.
+# ---------------------------------------------------------------------------
+companies/
+reviews/
+*.zip
+*.download
+
+# Vendor documentation (6.9 MB PDF)
+*.pdf
+
+# What IS kept: provenance/ holds each vintage's schema, changelog and
+# disclaimer, plus manifest-digests.csv — see provenance/README.md.
+
+# Working files
+scratch/
+*.tmp
+__pycache__/
+*.pyc
+.venv/
+venv/

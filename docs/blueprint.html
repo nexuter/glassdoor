@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glassdoor Panel Blueprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+:root{
+  --paper:#f1f3f1; --surface:#ffffff; --surface-2:#e8ede9; --sunk:#eaeeeb;
+  --ink:#171b19; --ink-2:#3c4642; --muted:#66736e; --rule:#d4dbd6; --rule-2:#e2e7e3;
+  --accent:#0f6a4e; --accent-2:#14856180; --accent-soft:#dcebe4;
+  --ochre:#93590d; --ochre-soft:#f3e7d2;
+  --crimson:#8c2f2a; --crimson-soft:#f4dedb;
+  --band-1:#0f6a4e; --band-2:#2c7f63; --band-3:#4a9479; --band-4:#69a98f;
+  --band-5:#88bea6; --band-6:#a6d2bd; --band-7:#c3e2d4; --band-8:#dcefe6;
+  --shadow:0 1px 2px rgba(23,27,25,.05), 0 8px 24px -16px rgba(23,27,25,.28);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0d100f; --surface:#151a18; --surface-2:#1c2321; --sunk:#111615;
+    --ink:#e3e9e5; --ink-2:#c0cac5; --muted:#8b9a94; --rule:#2a3230; --rule-2:#222927;
+    --accent:#52c096; --accent-2:#52c09666; --accent-soft:#15302a;
+    --ochre:#d4924a; --ochre-soft:#31261a;
+    --crimson:#dd7a72; --crimson-soft:#331f1e;
+    --band-1:#63cda4; --band-2:#57b992; --band-3:#4ca581; --band-4:#419170;
+    --band-5:#367d5f; --band-6:#2b694e; --band-7:#20553d; --band-8:#17412d;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0d100f; --surface:#151a18; --surface-2:#1c2321; --sunk:#111615;
+  --ink:#e3e9e5; --ink-2:#c0cac5; --muted:#8b9a94; --rule:#2a3230; --rule-2:#222927;
+  --accent:#52c096; --accent-2:#52c09666; --accent-soft:#15302a;
+  --ochre:#d4924a; --ochre-soft:#31261a;
+  --crimson:#dd7a72; --crimson-soft:#331f1e;
+  --band-1:#63cda4; --band-2:#57b992; --band-3:#4ca581; --band-4:#419170;
+  --band-5:#367d5f; --band-6:#2b694e; --band-7:#20553d; --band-8:#17412d;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:"Source Serif 4",Georgia,"Times New Roman",serif;
+  font-size:17px; line-height:1.62; margin:0;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4,.ui{font-family:Archivo,"Helvetica Neue",Arial,sans-serif}
+code,kbd,.mono{font-family:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace}
+
+.shell{max-width:1220px;margin:0 auto;padding:0 28px 96px;display:grid;gap:0 52px;grid-template-columns:1fr}
+@media(min-width:1080px){.shell{grid-template-columns:196px minmax(0,880px);justify-content:center}}
+
+/* ---- masthead ---- */
+.mast{grid-column:1/-1;padding:64px 0 34px;border-bottom:1px solid var(--rule)}
+.eyebrow{font-family:Archivo,sans-serif;font-size:11.5px;font-weight:600;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--accent);margin:0 0 18px}
+h1{font-size:clamp(38px,6vw,60px);line-height:1.02;font-weight:700;letter-spacing:-.025em;
+  margin:0 0 20px;text-wrap:balance;max-width:15ch}
+.standfirst{font-size:20px;line-height:1.5;color:var(--ink-2);max-width:60ch;margin:0 0 30px}
+.byline{font-family:Archivo,sans-serif;font-size:13px;color:var(--muted);
+  display:flex;flex-wrap:wrap;gap:8px 20px;margin:0}
+.byline b{font-weight:600;color:var(--ink-2)}
+.langlink{font-family:Archivo,sans-serif;font-size:12.5px;margin:18px 0 0}
+.langlink a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent-soft)}
+
+.figures{grid-column:1/-1;display:grid;gap:1px;background:var(--rule);
+  grid-template-columns:repeat(auto-fit,minmax(158px,1fr));
+  border-bottom:1px solid var(--rule)}
+.fig{background:var(--paper);padding:22px 4px 24px}
+.fig .n{font-family:Archivo,sans-serif;font-size:30px;font-weight:600;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;line-height:1;display:block;margin-bottom:7px}
+.fig .l{font-family:Archivo,sans-serif;font-size:11.5px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--muted)}
+
+/* ---- nav rail ---- */
+nav.toc{display:none}
+@media(min-width:1080px){
+  nav.toc{display:block;position:sticky;top:0;align-self:start;padding-top:44px;max-height:100vh;overflow-y:auto}
+  nav.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+  nav.toc a{font-family:Archivo,sans-serif;font-size:12.5px;line-height:1.35;color:var(--muted);
+    text-decoration:none;display:flex;gap:9px;padding:5px 0;border-top:1px solid transparent}
+  nav.toc a:hover{color:var(--accent)}
+  nav.toc a span{font-variant-numeric:tabular-nums;color:var(--muted);opacity:.6;flex:none}
+  nav.toc a:hover span{color:var(--accent)}
+}
+
+main{padding-top:44px;min-width:0}
+section{padding:38px 0 4px;border-top:1px solid var(--rule-2)}
+section:first-of-type{border-top:0;padding-top:8px}
+h2{font-size:27px;font-weight:600;letter-spacing:-.02em;line-height:1.15;margin:0 0 6px;text-wrap:balance}
+h2 .num{color:var(--accent);font-variant-numeric:tabular-nums;margin-right:11px;font-weight:500}
+.dek{color:var(--muted);font-size:16px;margin:0 0 26px;max-width:64ch}
+h3{font-size:15px;font-weight:600;letter-spacing:.02em;margin:32px 0 12px;color:var(--ink)}
+p{max-width:66ch;margin:0 0 17px}
+a{color:var(--accent)}
+strong{font-weight:600}
+em{font-style:italic}
+code{font-size:.855em;background:var(--surface-2);padding:.1em .34em;border-radius:3px;color:var(--ink-2)}
+
+ul.plain{max-width:66ch;padding-left:20px;margin:0 0 18px}
+ul.plain li{margin-bottom:9px}
+
+/* ---- callout ---- */
+.callout{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--accent);
+  padding:24px 26px;margin:0 0 26px;box-shadow:var(--shadow)}
+.callout.warn{border-left-color:var(--ochre)}
+.callout p:last-child{margin-bottom:0}
+.callout .tag{font-family:Archivo,sans-serif;font-size:11px;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--accent);display:block;margin-bottom:10px}
+.callout.warn .tag{color:var(--ochre)}
+
+/* ---- code ---- */
+pre{background:var(--sunk);border:1px solid var(--rule);padding:18px 20px;overflow-x:auto;
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;line-height:1.62;color:var(--ink-2);margin:0 0 22px}
+pre b{color:var(--accent);font-weight:500}
+pre i{color:var(--muted);font-style:normal}
+pre em{color:var(--ochre);font-style:normal}
+
+/* ---- tables ---- */
+.tw{overflow-x:auto;margin:0 0 24px;border:1px solid var(--rule);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14.5px;font-family:Archivo,sans-serif}
+th{text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--muted);padding:11px 16px;border-bottom:1px solid var(--rule);white-space:nowrap;
+  background:var(--surface-2)}
+td{padding:11px 16px;border-bottom:1px solid var(--rule-2);vertical-align:top;line-height:1.45}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+td code,th code{font-size:12.5px}
+
+/* ---- chart ---- */
+figure{margin:0 0 26px;background:var(--surface);border:1px solid var(--rule);padding:22px 22px 16px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{font-family:Archivo,sans-serif;font-size:12.5px;color:var(--muted);margin-top:14px;
+  padding-top:12px;border-top:1px solid var(--rule-2);line-height:1.5}
+.key{display:flex;flex-wrap:wrap;gap:6px 22px;font-family:Archivo,sans-serif;font-size:12.5px;
+  color:var(--ink-2);margin-bottom:16px}
+.key i{width:22px;height:3px;display:inline-block;vertical-align:middle;margin-right:8px;border-radius:2px}
+
+/* ---- vintage strip ---- */
+.stripwrap{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);padding:22px 22px 18px;margin:0 0 12px}
+.strip{min-width:640px}
+.striprow{display:grid;grid-template-columns:82px 1fr;align-items:center;gap:12px;margin-bottom:9px}
+.striplab{font-family:Archivo,sans-serif;font-size:11.5px;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--muted);text-align:right}
+.cells{display:grid;grid-template-columns:repeat(47,1fr);gap:1px}
+.cells i{height:19px;display:block;border-radius:1px}
+.axis{display:grid;grid-template-columns:82px 1fr;gap:12px;margin-top:4px}
+.axis .ticks{display:grid;grid-template-columns:repeat(47,1fr);font-family:"IBM Plex Mono",monospace;
+  font-size:9.5px;color:var(--muted)}
+.axis .ticks span{grid-row:1;text-align:center;white-space:nowrap}
+.vkey{display:flex;flex-direction:column;gap:9px;margin-top:16px;padding-top:14px;border-top:1px solid var(--rule-2);
+  font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted)}
+.vkey b{font-weight:400;display:inline-flex;align-items:center;gap:6px}
+.vkey b i{width:10px;height:10px;border-radius:2px;display:inline-block}
+
+/* ---- findings ---- */
+.finds{display:flex;flex-direction:column;gap:1px;background:var(--rule);border:1px solid var(--rule);margin:0 0 26px}
+.find{background:var(--surface);padding:16px 20px;display:grid;gap:4px 16px;
+  grid-template-columns:auto 1fr;align-items:baseline}
+.find .id{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);
+  font-variant-numeric:tabular-nums;padding-top:2px}
+.find .body{min-width:0}
+.find h4{font-family:Archivo,sans-serif;font-size:15px;font-weight:600;margin:0 0 5px;line-height:1.35}
+.find p{font-size:14.5px;margin:0;color:var(--ink-2);max-width:62ch;font-family:Archivo,sans-serif;line-height:1.5}
+.find .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px;align-items:center}
+.chip{font-family:Archivo,sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.07em;
+  text-transform:uppercase;padding:3px 8px;border-radius:2px}
+.chip.blocker{background:var(--crimson-soft);color:var(--crimson)}
+.chip.fix{background:var(--ochre-soft);color:var(--ochre)}
+.chip.doc{background:var(--accent-soft);color:var(--accent)}
+.scale{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted)}
+
+/* ---- screens ---- */
+.screens{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule);margin:0 0 26px}
+.screen{background:var(--surface);padding:20px 22px}
+.screen h4{font-family:Archivo,sans-serif;font-size:16px;font-weight:600;margin:0 0 7px;
+  display:flex;align-items:baseline;gap:11px}
+.screen h4 .k{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--accent);font-weight:400}
+.screen p{font-family:Archivo,sans-serif;font-size:14.5px;line-height:1.52;color:var(--ink-2);margin:0;max-width:64ch}
+
+/* ---- phases ---- */
+.phases{border:1px solid var(--rule);background:var(--surface);margin:0 0 26px}
+.phase{display:grid;grid-template-columns:44px 1fr 76px;gap:16px;padding:15px 20px;
+  border-bottom:1px solid var(--rule-2);align-items:baseline}
+.phase:last-child{border-bottom:0}
+.phase .p{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--accent);
+  font-variant-numeric:tabular-nums}
+.phase .t{font-family:Archivo,sans-serif;font-size:14.5px;line-height:1.5;color:var(--ink-2)}
+.phase .t b{color:var(--ink);font-weight:600;display:block;font-size:15px;margin-bottom:2px}
+.phase .d{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);text-align:right;
+  font-variant-numeric:tabular-nums}
+
+/* ---- questions ---- */
+.qs{counter-reset:q;margin:0 0 26px;padding:0;list-style:none}
+.qs li{counter-increment:q;position:relative;padding:0 0 18px 42px;margin:0}
+.qs li::before{content:"Q" counter(q);position:absolute;left:0;top:1px;
+  font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--accent)}
+.qs h4{font-family:Archivo,sans-serif;font-size:15.5px;font-weight:600;margin:0 0 5px;
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.qs .ans{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
+  background:var(--accent-soft);color:var(--accent);padding:3px 8px;border-radius:2px}
+.qs li.answered::before{color:var(--accent);opacity:.55}
+.qs li.answered h4{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--rule)}
+.qs li.answered h4 .ans{text-decoration:none;color:var(--accent)}
+.qs p{font-family:Archivo,sans-serif;font-size:14.5px;color:var(--ink-2);margin:0;line-height:1.52;max-width:62ch}
+
+footer{grid-column:1/-1;margin-top:56px;padding-top:22px;border-top:1px solid var(--rule);
+  font-family:Archivo,sans-serif;font-size:12.5px;color:var(--muted);display:flex;
+  flex-wrap:wrap;gap:8px 26px}
+
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="shell">
+
+  <header class="mast">
+    <p class="eyebrow">Data review &amp; build plan</p>
+    <h1>Glassdoor Panel Blueprint</h1>
+    <p class="standfirst">Forty-seven monthly vintages of Coresignal's Glassdoor companies and reviews
+      feeds, read end to end — what is in them, what is wrong with them, and how to turn them into a
+      queryable panel with a WRDS-style front door.</p>
+    <p class="byline"><span><b>Prepared</b> 3 September 2026</span>
+      <span><b>Coverage</b> 2022-06 → 2026-04</span>
+      <span><b>Source</b> Coresignal · Glassdoor</span>
+      <span><b>Status</b> pre-implementation</span></p>
+  </header>
+
+  <div class="figures">
+    <div class="fig"><span class="n">47</span><span class="l">Monthly vintages</span></div>
+    <div class="fig"><span class="n">1.85 M</span><span class="l">Companies, latest</span></div>
+    <div class="fig"><span class="n">42.3 M</span><span class="l">Reviews, latest</span></div>
+    <div class="fig"><span class="n">288 GB</span><span class="l">Compressed on disk</span></div>
+    <div class="fig"><span class="n">16</span><span class="l">Schema versions</span></div>
+  </div>
+
+  <nav class="toc" aria-label="Contents">
+    <ol>
+      <li><a href="#finding"><span>01</span>The core finding</a></li>
+      <li><a href="#disk"><span>02</span>What is on disk</a></li>
+      <li><a href="#growth"><span>03</span>Coverage over time</a></li>
+      <li><a href="#drift"><span>04</span>Schema drift</a></li>
+      <li><a href="#quality"><span>05</span>Data quality</a></li>
+      <li><a href="#db"><span>06</span>Database design</a></li>
+      <li><a href="#web"><span>07</span>The web interface</a></li>
+      <li><a href="#plan"><span>08</span>Phased plan</a></li>
+      <li><a href="#decide"><span>09</span>Decisions needed</a></li>
+      <li><a href="#now"><span>10</span>Housekeeping</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <section id="finding">
+      <h2><span class="num">01</span>The finding that drives everything else</h2>
+      <p class="dek">Before any schema work, one structural question had to be settled: are the monthly
+        directories deltas or full dumps?</p>
+
+      <div class="callout">
+        <span class="tag">Measured, not assumed</span>
+        <p>Every monthly directory is a <strong>full, cumulative re-dump</strong>. Comparing the complete
+          2022-06 and 2022-07 company vintages record by record:</p>
+      </div>
+
+<pre><i># 202206 vs 202207, both feeds in full, doc payload hashed</i>
+                <b>companies</b>              <b>reviews</b>
+  202206          829,559             17,096,860
+  202207          829,589             17,228,547
+  common          829,559             17,096,860
+  dropped               <b>0</b>                     <b>0</b>
+  added                30                131,687
+  doc identical   826,000  <b>99.57%</b>   17,076,493  <b>99.88%</b>
+  doc changed       <em>3,559</em>   0.43%       <em>20,367</em>   0.12%</pre>
+
+      <p>Nothing is ever withdrawn, and the payloads are close to static — four company rows in a
+        thousand change from one month to the next, and barely one review row in a thousand. Stored
+        literally, 47 snapshots would be about 56 million company-rows and <strong>1.4 billion
+        review-rows</strong>, more than 99% of them exact duplicates of a row already present.</p>
+
+      <div class="callout warn">
+        <span class="tag">A trap in the change detection</span>
+        <p>Hash the <em>whole</em> record rather than just <code>doc</code> and reviews appear to churn
+          at 11.7% a month. That is <code>_meta.updated_at_timestamp</code> moving on every re-scrape,
+          not content changing. Version on the payload, not the record.</p>
+      </div>
+
+      <p>So the design is: <strong>load each entity once and version only what changes.</strong> A
+        type-2 slowly-changing dimension keyed on a row hash collapses companies to ~1.9 M base rows
+        plus a few million change rows, and reviews to the ~41 M reviews that actually exist. "The panel
+        as of 2024-03" stays available — it becomes a range predicate rather than a stored copy.</p>
+    </section>
+
+    <section id="disk">
+      <h2><span class="num">02</span>What is actually on disk</h2>
+      <p class="dek">Two parallel trees, one directory per vintage, gzipped JSON shards three levels
+        down — plus four sidecar files per vintage that are more useful than they look.</p>
+
+<pre>glassdoor/
+  Glassdoor Data Dictionaries.pdf     <i># Coresignal docs: firmographic 7pp + reviews 4pp</i>
+  companies/<b>YYYYMM</b>/&lt;3-hex&gt;/&lt;md5&gt;.json.gz
+  reviews/<b>YYYYMM</b>/&lt;3-hex&gt;/&lt;md5&gt;.json.gz
+  reviews/companies/202601/           <em># duplicate of companies/202601 — removed</em>
+  *.zip                               <i># source archives, ~288 GB, deletable after verification</i></pre>
+
+      <h3>The sidecar files</h3>
+      <div class="tw"><table>
+        <thead><tr><th>File</th><th>What it gives you</th></tr></thead>
+        <tbody>
+          <tr><td><code>ids_*.txt</code></td><td>Every record id in the vintage — an exact, free row count and the load-completeness check for the ETL</td></tr>
+          <tr><td><code>glassdoor_*_latest.json</code></td><td>JSON Schema for the record. <strong>Stale:</strong> the reviews one omits <code>language</code>, <code>author_status</code> and <code>advice_to_management</code>. Trust the data, not this file.</td></tr>
+          <tr><td><code>CHANGELOG.*.yaml</code></td><td>Coresignal's own field-change log — last entry 2022-03, so it covers none of the drift observed in §04</td></tr>
+          <tr><td><code>DISCLAIMER.txt</code></td><td>Licence terms. See the note below.</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="callout warn">
+        <span class="tag">Licensing shapes the deployment</span>
+        <p>Each vintage ships a disclaimer stating the data is subject to copyright and trade-secret
+          rights, and that neither the database structure nor the data may be disclosed publicly or
+          re-distributed. The web interface therefore has to be authenticated and access-logged from
+          day one — this is not polish that can be deferred to the end.</p>
+      </div>
+
+      <h3>Shard format</h3>
+      <p>Every <code>.json.gz</code> holds <strong>exactly 10,000 records</strong>, pretty-printed as a
+        JSON array with one complete record per line (leading tab, trailing comma). The loader can
+        stream line by line — no incremental JSON parser, and shards parallelise trivially. Measured on
+        this machine, single-threaded: <strong>~43,500 records/s</strong> including gunzip, id extraction
+        and hashing. A full 47-vintage pass is roughly 9 hours serial, 1.5 hours at eight workers.</p>
+      <p>One trap: the directory bucket is the first three hex characters of the <em>filename</em>, and
+        the filename is <code>md5(first record's doc.id)</code>. It is not a content-hash bucket. Chunk
+        boundaries and filenames shift between vintages, so two months cannot be diffed by filename.</p>
+    </section>
+
+    <section id="growth">
+      <h2><span class="num">03</span>Coverage over time</h2>
+      <p class="dek">Growth is stepwise, not organic. Coresignal widened coverage several times; those
+        steps are collection events, not firm entry, and a naive panel would read them as such.</p>
+
+      <div class="key">
+        <span><i style="background:var(--accent)"></i>Companies (left axis)</span>
+        <span><i style="background:var(--ochre)"></i>Reviews (right axis)</span>
+      </div>
+      <figure>
+        <svg viewBox="0 0 880 330" role="img" aria-label="Company and review counts per monthly vintage, 2022-06 to 2026-04">
+          <g id="chart"></g>
+        </svg>
+        <figcaption>Record counts per vintage, taken from each vintage's own <code>ids_*.txt</code>
+          manifest. Dashed rules mark coverage expansions — green for companies, amber for reviews. Flat runs are real:
+          2022-12 through 2023-03 are identical re-deliveries, as are 2023-08 through 2023-10.</figcaption>
+      </figure>
+
+      <p>The jumps are large and abrupt. Companies gain <strong>+134 k</strong> in 2023-07,
+        <strong>+231 k</strong> in 2023-11, <strong>+130 k</strong> in 2025-03 and
+        <strong>+383 k</strong> in 2025-10; reviews gain <strong>+5.4 M</strong> in 2023-06 and
+        <strong>+3.2 M</strong> in 2026-03. Any analysis that reads a firm's first appearance as an
+        entry event, or a review-volume jump as a surge in posting, will pick up these collection
+        events instead. The panel needs an explicit <code>first_vintage</code> column, and the codebook
+        has to name these dates.</p>
+    </section>
+
+    <section id="drift">
+      <h2><span class="num">04</span>Schema drift</h2>
+      <p class="dek">Eight extraction schemas for companies, eight for reviews. Old records are never
+        back-filled, so a 2026 vintage still carries records emitted under the 2021 schema — the two
+        naming conventions sit side by side inside one file.</p>
+
+      <div class="stripwrap">
+        <div class="strip">
+          <div class="striprow"><span class="striplab">Companies</span><span class="cells" id="cstrip"></span></div>
+          <div class="striprow"><span class="striplab">Reviews</span><span class="cells" id="rstrip"></span></div>
+          <div class="axis"><span></span><span class="ticks" id="ticks"></span></div>
+          <div class="vkey" id="vkey"></div>
+        </div>
+      </div>
+      <p style="font-size:14px;color:var(--muted);font-family:Archivo,sans-serif;max-width:64ch">
+        Shading marks the <em>dominant</em> <code>_meta.version_id</code> in each vintage. Minority
+        versions persist throughout: in 2026-04, 0.7% of reviews are still on the 2022 schema.</p>
+
+      <h3>Companies</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Vintage</th><th>Change</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">2023-05</td><td><code>rating.star_distribution</code> and <code>percentage_distribution</code> promoted out of <code>rating.overall</code> — both nestings then coexist for about two years</td></tr>
+          <tr><td class="mono">2023-09</td><td><code>_meta.is_deleted</code> added</td></tr>
+          <tr><td class="mono">2024-05</td><td><code>doc.main_source_id</code> added — the branch-to-parent profile pointer (differs from <code>source_id</code> for 4,998 companies)</td></tr>
+          <tr><td class="mono">2024-05 → 2025-02</td><td><code>contact_info</code> gains instagram / linkedin / youtube, then loses them; the whole object disappears in <code>28ff7dfe</code></td></tr>
+          <tr><td class="mono">2024-12</td><td><code>doc.affiliated_companies[]</code> added</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Reviews</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Vintage</th><th>Change</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">2023-06</td><td><code>recommend.ratingCeo</code> → <code>rating_ceo</code>: camelCase to snake_case, and both forms persist indefinitely</td></tr>
+          <tr><td class="mono">2023-08</td><td><code>author_status</code>, <code>is_current</code>, <code>author_employment_length</code> added</td></tr>
+          <tr><td class="mono">2023-09</td><td><code>language</code> and <code>_meta.is_deleted</code> added</td></tr>
+          <tr><td class="mono">2023-10</td><td><code>work_text</code> retired — still present on un-refreshed old records</td></tr>
+          <tr><td class="mono">2024-02</td><td><code>advice_to_management</code> added</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="callout warn">
+        <span class="tag">Consequence for panel work</span>
+        <p>Any variable introduced after 2023 is missing by construction both for older vintages
+          <em>and</em> for stale records inside new vintages. The normaliser must branch on
+          <code>version_id</code>, not on vintage. The codebook needs a <code>first_available</code>
+          column per variable, and the exporter should attach a coverage note to every download.</p>
+      </div>
+    </section>
+
+    <section id="quality">
+      <h2><span class="num">05</span>Data quality</h2>
+      <p class="dek">Fourteen issues, every one confirmed against the data rather than inferred from the
+        documentation. Three of them would silently corrupt results if missed.</p>
+
+      <div class="finds" id="finds"></div>
+    </section>
+
+    <section id="db">
+      <h2><span class="num">06</span>Database design</h2>
+      <p class="dek">PostgreSQL as the system of record, with a Parquet mirror as the bulk-export fast
+        path.</p>
+
+      <p>Postgres brings concurrent users, authentication, row-level access control, an audit trail, and
+        adequate full-text search over review text via a GIN index on <code>tsvector</code>. A DuckDB
+        instance reading a partitioned Parquet copy of the same tables handles the heavy CSV exports and
+        gives anyone who wants it an offline analysis path. Estimated footprint: about <strong>100 GB</strong>
+        in Postgres — reviews with text and indexes account for 60–80 GB of that — and about
+        <strong>35 GB</strong> as Parquet with zstd.</p>
+      <p>ClickHouse would beat both on full-corpus text scans, but it adds operational burden a small
+        research group probably should not take on. Worth revisiting only if text search proves slow in
+        practice.</p>
+
+      <h3>Core tables</h3>
+<pre><b>vintage</b>(vintage_id, yyyymm, object, n_records_manifest, n_records_loaded, loaded_at)
+
+<b>company</b>(company_sk, source_id UNIQUE, main_source_id, first_vintage, last_vintage,
+        is_deleted, url, glassdoor_slug)
+<b>company_version</b>(company_sk, valid_from_vintage, valid_to_vintage, row_hash,
+        name, description, mission, website, type, founded, industry,
+        employee_count_band, revenue_band,
+        city, region, country,                    <i>-- parsed &amp; harmonised, see Q10</i>
+        ceo, ceo_approval_pct,
+        job_count, salary_count, benefit_count, review_count, interview_count,
+        rating_overall, rating_culture_values, rating_career_opportunities,
+        rating_compensation_benefits, rating_senior_management,
+        rating_work_life_balance, rating_diversity_inclusion,
+        pct_biz_outlook, pct_ceo_approval, pct_recommend,
+        stars_1..stars_5, pct_stars_1..pct_stars_5,
+        schema_version_id,
+        PRIMARY KEY (company_sk, valid_from_vintage))
+<b>company_affiliation</b>(company_sk, affiliate_url, affiliate_name, is_parent,
+        first_vintage, last_vintage)
+
+<b>review</b>(review_sk, source_id UNIQUE, company_sk, company_id_raw,
+        review_date, review_year, review_month, language,
+        author_location, author_title, author_status, is_current,
+        author_employment_length,
+        star_overall, star_culture_values, star_career_opportunities,
+        star_compensation_benefits, star_senior_management,
+        star_work_life_balance, star_diversity_inclusion,
+        rec_ceo, rec_business_outlook, rec_recommend_to_friend, recommend_raw,
+        first_vintage, last_vintage, is_deleted, schema_version_id)
+        <b>PARTITION BY RANGE</b> (review_year)                 <i>-- 2008 … current</i>
+<b>review_text</b>(review_sk, summary, pros, cons, advice_to_management, work_text,
+        search_tsv)                               <i>-- GIN index</i>
+<b>review_version</b>(review_sk, valid_from_vintage, valid_to_vintage, row_hash, …)
+        <i>-- populated only for reviews whose content actually changed</i>
+
+<i>-- materialised for the query builder</i>
+<b>company_month</b>(company_sk, yyyymm, &lt;company_version fields&gt;)
+<b>company_review_month</b>(company_sk, yyyymm, n_reviews, avg_overall, …)</pre>
+
+      <p>Reference tables for <code>industry</code>, <code>company_type</code>,
+        <code>employee_count_band</code>, <code>revenue_band</code> and <code>country</code>, so that
+        every filter in the UI is a dropdown rather than a free-text box.</p>
+
+      <h3>Indexes that matter</h3>
+      <ul class="plain">
+        <li><code>review (company_sk, review_date)</code> — the dominant access path by a wide margin</li>
+        <li><code>review (review_date)</code> within each partition</li>
+        <li><code>review (star_overall)</code>, <code>(language)</code>, <code>(author_status)</code> — the selective filters</li>
+        <li>GIN on <code>review_text.search_tsv</code> for keyword search across pros / cons / summary / advice</li>
+        <li>Trigram index on <code>company.name</code> for the autocomplete, plus the SCD range index on <code>company_version</code></li>
+      </ul>
+    </section>
+
+    <section id="web">
+      <h2><span class="num">07</span>The web interface</h2>
+      <p class="dek">The test is that someone who has never written SQL can define a sample, choose
+        variables, and walk away with a CSV. Five screens do that.</p>
+
+      <div class="screens">
+        <div class="screen"><h4><span class="k">01</span>Company finder</h4>
+          <p>Name autocomplete plus filters on industry, country, size band, revenue band, founding year
+            and rating range. Or skip the filters entirely and paste in a list of Glassdoor company ids
+            to define the sample directly.</p></div>
+        <div class="screen"><h4><span class="k">02</span>Review query builder</h4>
+          <p>Sample × date range × filters — overall and sub-ratings, recommend / CEO approval /
+            business outlook, author status, current vs former employee, tenure, language, has-text —
+            plus keyword search in pros, cons, summary and advice. Variables come from a grouped
+            checkbox list, with a live row-count estimate before you commit.</p></div>
+        <div class="screen"><h4><span class="k">03</span>Company panel builder</h4>
+          <p>The thing raw Glassdoor cannot give you: choose companies, a date range, a frequency and
+            variables, and get a balanced monthly panel assembled from the version history — with the
+            coverage-break and first-available warnings from §03 and §04 attached to the output.</p></div>
+        <div class="screen"><h4><span class="k">04</span>Download centre</h4>
+          <p>Every non-trivial request runs as a background job, exactly the WRDS model. CSV, TSV,
+            Parquet or Stata, gzipped, behind expiring links — with the exact query parameters stored
+            alongside each output so a result can be reproduced and cited.</p></div>
+        <div class="screen"><h4><span class="k">05</span>Codebook</h4>
+          <p>Generated from the schema plus the profiling statistics in §05, so every variable page
+            shows its type, its coverage, how sentinels were handled, and the vintage from which it is
+            available at all.</p></div>
+      </div>
+
+      <p>Alongside those: a read-only SQL console for power users on a separate database role with a
+        statement timeout and a row cap; mandatory login with terms acceptance; and a download audit
+        log, which the licence effectively requires.</p>
+      <p>For the stack, FastAPI and SQLAlchemy with a JSON-to-SQL query-builder layer, <code>arq</code>
+        or Celery workers for exports, and a server-rendered HTMX front end — fast to build and with no
+        single-page app to maintain — unless a React front end is specifically wanted.</p>
+    </section>
+
+    <section id="plan">
+      <h2><span class="num">08</span>Phased plan</h2>
+      <p class="dek">Roughly eight to eleven weeks for one engineer to a usable internal service. The
+        phases are genuinely sequential — each depends on the one before.</p>
+
+      <div class="phases">
+        <div class="phase"><span class="p">P0</span><span class="t"><b>Decisions and provisioning</b>Settle §09, stand up Postgres and object storage, repo hygiene.</span><span class="d">1–2 d</span></div>
+        <div class="phase"><span class="p">P1</span><span class="t"><b>ETL foundation</b>Streaming reader and version-aware normaliser covering all sixteen schema versions. One vintage loaded end to end and reconciled against its <code>ids_*.txt</code>.</span><span class="d">1 w</span></div>
+        <div class="phase"><span class="p">P2</span><span class="t"><b>Full historical load</b>Dedup and SCD-2 across all 47 vintages, parallel by vintage, with orphan and anomaly capture. ~1.5 h of compute per pass; expect several passes.</span><span class="d">1–2 w</span></div>
+        <div class="phase"><span class="p">P3</span><span class="t"><b>Indexes, panels, codebook</b>Partitions, materialised panel and aggregates, QA report, generated codebook.</span><span class="d">1 w</span></div>
+        <div class="phase"><span class="p">P4</span><span class="t"><b>Query API</b>Sample definition, variable selection, row estimation, export job queue.</span><span class="d">1–2 w</span></div>
+        <div class="phase"><span class="p">P5</span><span class="t"><b>Web UI</b>The five screens in §07.</span><span class="d">2–3 w</span></div>
+        <div class="phase"><span class="p">P6</span><span class="t"><b>Access control</b>Auth, terms acceptance, audit logging, download expiry, deployment.</span><span class="d">1 w</span></div>
+        <div class="phase"><span class="p">P7</span><span class="t"><b>Monthly refresh</b>Ingest a new vintage, close and open SCD rows, refresh matviews, emit a diff report.</span><span class="d">3–5 d</span></div>
+      </div>
+
+      <div class="callout">
+        <span class="tag">Validation gates</span>
+        <p>P1 and P2 are not finished until, for every vintage: rows loaded equals
+          <code>wc -l ids_*.txt</code>; every <code>source_id</code> in the manifest resolves; no review
+          lands in a date partition outside 2008-01 to the present; and sentinel counts match the
+          profiling baseline recorded in §05.</p>
+      </div>
+    </section>
+
+    <section id="decide">
+      <h2><span class="num">09</span>Decisions needed before P1</h2>
+      <p class="dek">Six questions when this review started; one of them has since been settled by
+        measurement. The rest change the deployment more than the design.</p>
+
+      <ol class="qs">
+        <li class="answered"><h4>Reviews — full history, or current state only? <span class="ans">Answered: keep the history</span></h4>
+          <p>Review payload churn measures 0.12% a month — 20,367 changed rows between 2022-06 and
+            2022-07. A <code>review_version</code> table therefore costs on the order of one million
+            rows across all 47 vintages, which is nothing. Build it.</p></li>
+        <li><h4>Postgres, or DuckDB only?</h4>
+          <p>How many concurrent users? If this is really one to three people doing research, DuckDB on
+            Parquet with a thin front end roughly halves the build.</p></li>
+        <li><h4>Where does it run?</h4>
+          <p>A local server on this D: volume — 5.5 TB free, comfortably enough — or institutional or
+            cloud hosting? This determines the authentication story.</p></li>
+        <li><h4>Who may log in?</h4>
+          <p>Given the Coresignal terms, presumably named accounts inside the licensed institution only.
+            Worth confirming before P6 rather than after.</p></li>
+        <li><h4>Export ceilings.</h4>
+          <p>Row cap per download, retention period, and whether raw review text may be exported in bulk
+            or only in aggregate.</p></li>
+        <li><h4>Do the <code>.zip</code> archives go?</h4>
+          <p>Deleting them after byte-verifying the extracted trees reclaims about 288 GB.</p></li>
+      </ol>
+    </section>
+
+    <section id="now">
+      <h2><span class="num">10</span>Housekeeping, now done</h2>
+      <ul class="plain">
+        <li><strong>Done.</strong> <code>reviews/companies/202601/</code> removed, after verifying it
+          against <code>companies/202601/</code> — 189 files each, 309,891,751 bytes each, matching
+          content hashes.</li>
+        <li><strong>Done.</strong> <code>.gitignore</code> added for <code>companies/</code>,
+          <code>reviews/</code>, <code>*.zip</code> and <code>*.pdf</code>, clearing ~290 GB of
+          untracked data out of <code>git status</code>.</li>
+        <li><strong>Done, with one correction.</strong> Each vintage's schema, changelog and disclaimer
+          are now version-controlled under <code>provenance/</code> — 282 files, 552 KB. The
+          <code>ids_*.txt</code> manifests, however, are <em>not</em> small: 1.46 GB for companies and
+          61.4 GB for reviews, 63 GB in total, so they cannot be committed. Their per-file byte size and
+          SHA-256 go into <code>provenance/manifest-digests.csv</code> instead, which keeps them
+          verifiable while the files themselves stay on disk.</li>
+      </ul>
+    </section>
+
+  </main>
+
+  <footer>
+    <span>Glassdoor Panel Blueprint</span>
+    <span>All figures measured against the extracted trees, September 2026</span>
+    <span>Coresignal data — internal use, not for redistribution</span>
+  </footer>
+</div>
+
+<script>
+const MONTHS = (() => {
+  const out = []; let y = 2022, m = 6;
+  for (let i = 0; i < 47; i++) { out.push(y * 100 + m); m++; if (m > 12) { m = 1; y++; } }
+  return out;
+})();
+
+const COMPANIES = [829559,829589,829512,829628,829682,829682,829685,829685,829685,829685,
+  830171,831264,831303,965326,965329,965329,965329,1196254,1216266,1216266,1216349,1217085,
+  1222402,1225185,1226062,1227214,1227215,1227360,1227396,1227427,1227499,1227518,1227544,
+  1357863,1404635,1415864,1415944,1415957,1415969,1416490,1799709,1845539,1847826,1849296,
+  1850230,1852076,1852962];
+
+const REVIEWS = [17096860,17228547,17938738,18019810,18653905,19053589,19153248,19480851,
+  19783365,20008203,20405410,20734396,26149464,27019194,27019194,27611343,28017794,28412521,
+  28789116,29389282,29817070,29874009,30294352,30712701,31125909,31548102,31722807,32424087,
+  32891695,33482875,33731990,34393872,34764776,35679095,35993023,36085151,36468200,36840596,
+  37159458,37441687,37733855,38228671,38493041,38720200,38890641,42128694,42282291];
+
+/* ---------- growth chart ---------- */
+(function () {
+  const W = 880, H = 330, L = 62, R = 66, T = 18, B = 40;
+  const iw = W - L - R, ih = H - T - B;
+  const g = document.getElementById('chart');
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (n, a) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
+
+  const n = COMPANIES.length;
+  const x = i => L + (iw * i) / (n - 1);
+  const cMax = 2000000, rMax = 45000000;
+  const yc = v => T + ih - (v / cMax) * ih;
+  const yr = v => T + ih - (v / rMax) * ih;
+
+  // horizontal grid + left axis (companies, millions)
+  for (let v = 0; v <= 2000000; v += 500000) {
+    g.appendChild(el('line', { x1: L, x2: L + iw, y1: yc(v), y2: yc(v), stroke: 'var(--rule-2)', 'stroke-width': 1 }));
+    const t = el('text', { x: L - 12, y: yc(v) + 4, 'text-anchor': 'end', fill: 'var(--muted)',
+      'font-family': 'IBM Plex Mono, monospace', 'font-size': 10.5 });
+    t.textContent = (v / 1e6).toFixed(1) + 'M'; g.appendChild(t);
+  }
+  // right axis (reviews, millions)
+  for (let v = 0; v <= 45000000; v += 15000000) {
+    const t = el('text', { x: L + iw + 12, y: yr(v) + 4, fill: 'var(--muted)',
+      'font-family': 'IBM Plex Mono, monospace', 'font-size': 10.5 });
+    t.textContent = (v / 1e6).toFixed(0) + 'M'; g.appendChild(t);
+  }
+
+  const path = (vals, sc) => vals.map((v, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + sc(v).toFixed(1)).join(' ');
+
+  // companies area + line
+  const area = path(COMPANIES, yc) + ` L ${x(n - 1).toFixed(1)} ${T + ih} L ${L} ${T + ih} Z`;
+  g.appendChild(el('path', { d: area, fill: 'var(--accent-soft)', stroke: 'none' }));
+  g.appendChild(el('path', { d: path(COMPANIES, yc), fill: 'none', stroke: 'var(--accent)',
+    'stroke-width': 2, 'stroke-linejoin': 'round' }));
+
+  // reviews line (may be partial)
+  if (REVIEWS.length > 1) {
+    g.appendChild(el('path', { d: path(REVIEWS, yr), fill: 'none', stroke: 'var(--ochre)',
+      'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-dasharray': '0' }));
+    const li = REVIEWS.length - 1;
+    g.appendChild(el('circle', { cx: x(li), cy: yr(REVIEWS[li]), r: 3.5, fill: 'var(--ochre)' }));
+  }
+  g.appendChild(el('circle', { cx: x(n - 1), cy: yc(COMPANIES[n - 1]), r: 3.5, fill: 'var(--accent)' }));
+
+  // coverage-break markers
+  [[13, '+134k'], [17, '+231k'], [33, '+130k'], [40, '+383k']].forEach(([i, lab]) => {
+    g.appendChild(el('line', { x1: x(i), x2: x(i), y1: T, y2: T + ih, stroke: 'var(--accent)',
+      'stroke-width': 1, 'stroke-dasharray': '2 4', opacity: .5 }));
+    const t = el('text', { x: x(i), y: T - 4, 'text-anchor': 'middle', fill: 'var(--accent)',
+      'font-family': 'IBM Plex Mono, monospace', 'font-size': 9.5 });
+    t.textContent = lab; g.appendChild(t);
+  });
+
+  // review coverage breaks, labelled low so they clear the company markers
+  [[12, '+5.4M'], [45, '+3.2M']].forEach(([i, lab]) => {
+    g.appendChild(el('line', { x1: x(i), x2: x(i), y1: yr(REVIEWS[i]) - 6, y2: T + ih,
+      stroke: 'var(--ochre)', 'stroke-width': 1, 'stroke-dasharray': '2 4', opacity: .55 }));
+    const t = el('text', { x: x(i) + (i > 40 ? -6 : 6), y: T + ih - 8,
+      'text-anchor': i > 40 ? 'end' : 'start', fill: 'var(--ochre)',
+      'font-family': 'IBM Plex Mono, monospace', 'font-size': 9.5 });
+    t.textContent = lab; g.appendChild(t);
+  });
+
+  // baseline + x labels
+  g.appendChild(el('line', { x1: L, x2: L + iw, y1: T + ih, y2: T + ih, stroke: 'var(--rule)', 'stroke-width': 1 }));
+  [[0, '2022-06'], [7, '2023-01'], [19, '2024-01'], [31, '2025-01'], [43, '2026-01'], [46, '2026-04']]
+    .forEach(([i, lab]) => {
+      const t = el('text', { x: x(i), y: T + ih + 20, 'text-anchor': i === 0 ? 'start' : (i === 46 ? 'end' : 'middle'),
+        fill: 'var(--muted)', 'font-family': 'IBM Plex Mono, monospace', 'font-size': 10.5 });
+      t.textContent = lab; g.appendChild(t);
+    });
+})();
+
+/* ---------- schema-version strip ---------- */
+(function () {
+  const cVer = [
+    ['ec3bbb21', 11], ['3c6cd3e6', 2], ['1e079f04', 4], ['2aa31948', 7],
+    ['b4615eeb', 6], ['28ff7dfe', 17]
+  ];
+  const rVer = [
+    ['a7fb44ed', 12], ['4b8bd062', 2], ['784e5060', 1], ['43b86bce', 1],
+    ['30490a9e', 4], ['454126bb', 7], ['d5d447b0', 20]
+  ];
+  const colours = ['var(--band-1)', 'var(--band-3)', 'var(--band-5)', 'var(--band-2)',
+    'var(--band-4)', 'var(--band-6)', 'var(--band-7)'];
+  const label = i => String(MONTHS[i]).slice(0, 4) + '-' + String(MONTHS[i]).slice(4);
+
+  function fill(node, bands) {
+    let i = 0;
+    bands.forEach(([ver, len], bi) => {
+      for (let k = 0; k < len; k++) {
+        const c = document.createElement('i');
+        c.style.background = colours[bi % colours.length];
+        c.title = label(i) + ' · ' + ver;
+        node.appendChild(c); i++;
+      }
+    });
+  }
+  fill(document.getElementById('cstrip'), cVer);
+  fill(document.getElementById('rstrip'), rVer);
+
+  const ticks = document.getElementById('ticks');
+  [[0, '2022-06'], [7, '23-01'], [19, '24-01'], [31, '25-01'], [43, '26-01'], [46, '26-04']]
+    .forEach(([i, lab]) => {
+      const s = document.createElement('span');
+      s.style.gridColumn = (i + 1) + ' / span 1';
+      s.textContent = lab;
+      if (i === 0) s.style.textAlign = 'left';
+      if (i === 46) s.style.textAlign = 'right';
+      ticks.appendChild(s);
+    });
+
+  const key = document.getElementById('vkey');
+  [['Companies', cVer], ['Reviews', rVer]].forEach(([name, bands]) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px 14px;align-items:center;width:100%';
+    const lab = document.createElement('span');
+    lab.textContent = name;
+    lab.style.cssText = 'font-family:Archivo,sans-serif;font-size:10.5px;font-weight:600;' +
+      'letter-spacing:.07em;text-transform:uppercase;color:var(--muted);min-width:72px';
+    row.appendChild(lab);
+    bands.forEach(([v], i) => {
+      const b = document.createElement('b');
+      const sw = document.createElement('i');
+      sw.style.background = colours[i % colours.length];
+      b.appendChild(sw);
+      b.appendChild(document.createTextNode(v));
+      row.appendChild(b);
+    });
+    key.appendChild(row);
+  });
+})();
+
+/* ---------- findings ---------- */
+(function () {
+  const F = [
+    ['blocker', 'The review natural key is <code>doc.source_id</code>, not <code>doc.id</code>',
+      'Legacy version <code>0399c54a</code> emits <code>id = glassdoor_&lt;source_id&gt;</code>; every other version emits <code>glassdoor_review_&lt;source_id&gt;</code>. The same review therefore carries two different <code>id</code> values across vintages, and de-duplicating on <code>id</code> would double-count it.',
+      '0.3–3% of rows per vintage', 'Key on source_id; keep id as an attribute'],
+    ['blocker', 'The <code>RVW…</code> number inside <code>source_id</code> is not unique',
+      'A 340,000-review sample contained 7,705 colliding RVW integers — the same review number under different company slugs. The full <code>source_id</code> string is unique; the number alone is not.',
+      '2.4% of sampled reviews', 'Never key on the RVW integer alone'],
+    ['blocker', 'Sentinel values masquerading as data',
+      'Company ratings use <code>-0.1</code> for "no rating" — 302,871 companies in the 2026-04 vintage — along with <code>-1.0</code> and <code>-10</code>. Review sub-ratings use <code>0</code> for "not rated": 146,443 of 660,000 sampled <code>culture_values</code>. Averaged naively, these drag every mean downward.',
+      'Very large', 'Map to NULL; retain a *_raw copy where the distinction matters'],
+    ['fix', '<code>company_id</code> is sometimes a name-and-id string',
+      'Instead of <code>"123456"</code>, some reviews carry <code>"Company Name:E123456"</code> — for example <code>"ESPN, Inc.:E13401"</code>. Always from legacy schema versions.',
+      '763 of 660,000 (0.12%)', 'Regex :E(\\d+)$; keep company_id_raw'],
+    ['fix', 'Orphan reviews',
+      'Some numeric <code>company_id</code>s have no matching company record in the same vintage.',
+      '52 of 26,563 distinct ids (0.2%)', 'Load with an orphan flag; do not silently drop'],
+    ['fix', '<code>recommend</code> is sometimes a plain string',
+      'Rather than an object, some records carry <code>"Recommend, CEO Approval, Business Outlook"</code> — including variants with doubled spaces. A further 26% of records have <code>recommend: null</code>, which is genuine missingness.',
+      '~0.66% string form; 26% null', 'Parse to flags, retain the raw value'],
+    ['fix', 'Mixed types in <code>is_current</code> and <code>star_rating.overall</code>',
+      '<code>is_current</code> carries booleans and the strings <code>"True"</code> / <code>"False"</code>. <code>star_rating.overall</code> mixes integers (<code>4</code>) and floats (<code>5.0</code>).',
+      '~0.3% / widespread', 'Cast on load'],
+    ['fix', '<code>location</code> changed meaning mid-panel',
+      'In 2022 vintages the field reads <code>"Plano, TX"</code> — a US state abbreviation. By late 2023 the same field reads <code>"City, Country"</code>. A country column built naively is wrong for every US company in the early vintages.',
+      'All US rows before ~2023-10', 'Parse to city / region / country, normalising state → United States'],
+    ['fix', 'Some consecutive vintages are identical re-deliveries',
+      'Companies 2022-12 through 2023-03 all report 829,685 records with identical version mixes; 2023-08 through 2023-10 all report 965,329; reviews 2023-07 and 2023-08 both report 27,019,194. These months carry no new observation and must not be read as "no change".',
+      'At least 6 vintage pairs', 'Detect by manifest hash; mark as a repeat, exclude from change series'],
+    ['fix', 'Control characters and very long text',
+      'Coresignal documents control characters in <code>description</code>. Observed maxima: <code>cons</code> 18,230 characters, <code>advice_to_management</code> 10,010, <code>description</code> 6,294, <code>mission</code> 2,754.',
+      '—', 'Strip C0 controls; store as text, not varchar'],
+    ['doc', 'The shipped JSON Schema is stale',
+      'The reviews schema file omits <code>language</code>, <code>author_status</code>, <code>is_current</code>, <code>author_employment_length</code> and <code>advice_to_management</code>, all of which are present in the data. The changelog stops at 2022-03.',
+      'Both objects', 'Derive the schema from the data; keep the shipped file as provenance only'],
+    ['doc', 'Heavy sparsity in company firmographics',
+      'In the 2026-04 vintage: <code>industry</code> null for 66% of companies, <code>founded</code> for 87%, <code>ceo</code> for 81%, <code>mission</code> for 99%, <code>affiliated_companies</code> for 99.5%. <code>employee_count</code> is "Unknown" for 22% and <code>revenue</code> for 81%.',
+      '1.85 M companies', 'Publish coverage rates per variable in the codebook'],
+    ['doc', 'Branch profiles and affiliations',
+      '<code>main_source_id</code> differs from <code>source_id</code> for 4,998 companies — branch profiles pointing at a parent. Only 9,314 companies carry an <code>affiliated_companies</code> list at all.',
+      '0.3% / 0.5% of companies', 'Expose both as joinable relations, not as buried JSON'],
+    ['doc', 'A stray duplicate tree — now removed',
+      '<code>reviews/companies/202601/</code> was a second extraction of <code>companies/202601/</code>. Both held 189 files and 309,891,751 bytes with matching content hashes; verified, then deleted.',
+      '296 MB', 'Verified and deleted'],
+    ['doc', 'The <code>ids_*.txt</code> manifests are not small',
+      'Every vintage ships a full list of record ids — 1.46 GB across the company vintages and 61.4 GB across the review vintages. They cannot go into version control, so only their byte size and SHA-256 are recorded.',
+      '63 GB total', 'Digests in provenance/manifest-digests.csv']
+  ];
+  const wrap = document.getElementById('finds');
+  F.forEach((f, i) => {
+    const [sev, title, body, scale, action] = f;
+    const d = document.createElement('div'); d.className = 'find';
+    d.innerHTML = '<span class="id">' + String(i + 1).padStart(2, '0') + '</span>' +
+      '<div class="body"><h4>' + title + '</h4><p>' + body + '</p>' +
+      '<div class="meta"><span class="chip ' + sev + '">' +
+      (sev === 'blocker' ? 'Corrupts results' : sev === 'fix' ? 'Fix in ETL' : 'Document') +
+      '</span><span class="scale">' + scale + '</span><span class="scale">→ ' + action + '</span></div></div>';
+    wrap.appendChild(d);
+  });
+})();
+</script>
+
+</body>
+</html>
